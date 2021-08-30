@@ -1,0 +1,11 @@
+UI vesamenu.c32
+TIMEOUT 300
+
+LABEL memtest
+KERNEL memtest
+LABEL wds
+KERNEL pxeboot.0
+LABEL Abort
+KERNEL abortpxe.0
+LABEL local
+LOCALBOOT 0
