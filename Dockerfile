@@ -20,8 +20,6 @@ VOLUME /tftpboot
 # http://forum.alpinelinux.org/apk/main/x86_64/tftp-hpa
 RUN apk add --no-cache tftp-hpa
 
-EXPOSE 69/udp
-
 RUN adduser -D tftp
 
 COPY start /usr/sbin/start

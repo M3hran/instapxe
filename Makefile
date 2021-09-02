@@ -1,5 +1,5 @@
 NAME = m3hran/instapxe
-VERSION = 0.3
+VERSION = 0.6
 C_NAME = instapxe
 
 .PHONY: all build test tag_latest release install clean

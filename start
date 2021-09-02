@@ -6,7 +6,8 @@ ln -sf /var/run/rsyslog/dev/log /dev/log
 PATHS="/tftpboot/bios /tftpboot/efi32 /tftpboot/efi64"
 for i in $PATHS
 do	
-	echo "MENU INCLUDE pxelinux.cfg/pxe.conf" >> $i/pxelinux.cfg/default
+	grep -qxF 'MENU INCLUDE pxelinux.cfg/instapxe.conf' $i/pxelinux.cfg/default || echo 'MENU INCLUDE pxelinux.cfg/instapxe.conf' >> $i/pxelinux.cfg/default
+	sed -i 's/^MENU INCLUDE pxelinux.cfg.*/MENU INCLUDE pxelinux.cfg\/instapxe.conf/' $i/pxelinux.cfg/default
 done
 
 exec in.tftpd "$@"
