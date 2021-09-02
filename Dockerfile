@@ -12,7 +12,7 @@ ADD instapxe_uefi32.cfg /tftpboot/efi32/pxelinux.cfg/
 ADD instapxe_uefi64.cfg /tftpboot/efi64/pxelinux.cfg/
 
 # Support clients that use backslash instead of forward slash.
-COPY mapfile /tftpboot/
+#COPY mapfile /tftpboot/
 
 # Do not track further change to /tftpboot.
 VOLUME /tftpboot
@@ -26,4 +26,6 @@ RUN adduser -D tftp
 
 COPY start /usr/sbin/start
 ENTRYPOINT ["/usr/sbin/start"]
-CMD ["-L", "--verbose", "-m", "/tftpboot/mapfile", "-u", "tftp", "--secure", "/tftpboot"]
+
+#CMD ["-L", "--verbose", "-m", "/tftpboot/mapfile", "-u", "tftp", "--secure", "/tftpboot"]
+CMD ["-L", "--verbose", "-u", "tftp", "--secure", "/tftpboot"]
