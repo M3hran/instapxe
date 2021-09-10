@@ -1,29 +1,34 @@
 FROM alpine:3.12.0
-# authoer: m3hran
+##########################################################################
+# author: m3hran
+# image name: instapxe/instapxe
 #
-# NOTE: If you bump the syslinux version here,
-#       please also update the README.md.
-
-ADD syslinux-6.04-pre2 /tftpboot
+# copyright (c) instaPXE -- Parallax System LLC 2021
+# LICENSE AGREEMENT: https://instapxe.com/eula
+#
+# 
+#      
+#########################################################################
+ADD syslinux-6.04-pre2 /var/opt/instapxe
 
 # Add safe defaults that can be overriden easily.
-ADD instapxe_bios.cfg /tftpboot/bios/pxelinux.cfg/
-ADD instapxe_uefi32.cfg /tftpboot/efi32/pxelinux.cfg/
-ADD instapxe_uefi64.cfg /tftpboot/efi64/pxelinux.cfg/
+ADD instapxe_bios.cfg /var/opt/instapxe/bios/pxelinux.cfg/
+ADD instapxe_uefi32.cfg /var/opt/instapxe/efi32/pxelinux.cfg/
+ADD instapxe_uefi64.cfg /var/opt/instapxe/efi64/pxelinux.cfg/
 
 # Support clients that use backslash instead of forward slash.
-#COPY mapfile /tftpboot/
+#COPY mapfile /instapxe/
 
-# Do not track further change to /tftpboot.
-VOLUME /tftpboot
+# Do not track further change to /instapxe.
+VOLUME /var/opt/instapxe
 
 # http://forum.alpinelinux.org/apk/main/x86_64/tftp-hpa
 RUN apk add --no-cache tftp-hpa
 
-RUN adduser -D tftp
+RUN adduser -D instapxe
 
 COPY start /usr/sbin/start
 ENTRYPOINT ["/usr/sbin/start"]
 
-#CMD ["-L", "--verbose", "-m", "/tftpboot/mapfile", "-u", "tftp", "--secure", "/tftpboot"]
-CMD ["-L", "--verbose", "-u", "tftp", "--secure", "/tftpboot"]
+#CMD ["-L", "--verbose", "-m", "/instapxe/mapfile", "-u", "tftp", "--secure", "/instapxe"]
+CMD ["-L", "--verbose", "-u", "instapxe", "--secure", "/var/opt/instapxe"]
