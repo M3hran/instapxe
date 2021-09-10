@@ -1,0 +1,37 @@
+#!/bin/sh
+
+timestamp() {
+  date +"%m/%d/%Y-%H:%M:%S" # current time
+}
+
+
+INSTALLDIR="/var/opt/instapxe"
+PATHS="$INSTALLDIR/bios $INSTALLDIR/efi32 $INSTALLDIR/efi64"
+for i in $PATHS
+do
+        #check for user mounted volume
+        if [ -d /instapxe ]; then
+                if [ -d /instapxe/boot ]; then
+                        ln -sf /instapxe/boot $i/boot
+                fi
+                if [ -f /instapxe/menu ] && [[ $i == $INSTALLDIR/bios ]]; then
+                        ln -sf /instapxe/menu $i/pxelinux.cfg/default
+                fi
+                if [ -f /instapxe/menu32 ] && [[ $i == $INSTALLDIR/efi32 ]]; then
+                        ln -sf /instapxe/menu32 $i/pxelinux.cfg/default
+                fi
+                if [ -f /instapxe/menu64 ] && [[ $i == $INSTALLDIR/efi64 ]]; then
+                        ln -sf /instapxe/menu64 $i/pxelinux.cfg/default
+                fi
+        fi
+        #check for splash
+        if [ ! $(head -5 $i/pxelinux.cfg/default | grep -qxF 'MENU INCLUDE pxelinux.cfg/instapxe.conf)') ]; then
+                cp $i/pxelinux.cfg/default /tmp/tmpdefault
+                sed -i '/vesamenu.c32.*/a MENU INCLUDE pxelinux.cfg\/instapxe.conf' /tmp/tmpdefault
+                cp /tmp/tmpdefault $i/pxelinux.cfg/default
+                rm /tmp/tmpdefault
+        fi
+done
+
+echo `timestamp` "- instaPXE initizalied."
+

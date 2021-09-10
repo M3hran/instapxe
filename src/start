@@ -1,0 +1,8 @@
+#!/bin/sh
+
+
+ln -sf /var/run/rsyslog/dev/log /dev/log
+/var/opt/instapxe/init
+
+
+exec in.tftpd "$@"

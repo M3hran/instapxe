@@ -27,7 +27,8 @@ RUN apk add --no-cache tftp-hpa
 
 RUN adduser -D instapxe
 
-COPY start /usr/sbin/start
+COPY src/init /var/opt/instapxe/init
+COPY src/start /usr/sbin/start
 ENTRYPOINT ["/usr/sbin/start"]
 
 #CMD ["-L", "--verbose", "-m", "/instapxe/mapfile", "-u", "tftp", "--secure", "/instapxe"]
