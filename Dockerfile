@@ -19,16 +19,18 @@ ADD instapxe_uefi64.cfg /var/opt/instapxe/efi64/pxelinux.cfg/
 # Support clients that use backslash instead of forward slash.
 #COPY mapfile /instapxe/
 
-# Do not track further change to /instapxe.
-VOLUME /var/opt/instapxe
+
 
 # http://forum.alpinelinux.org/apk/main/x86_64/tftp-hpa
 RUN apk add --no-cache tftp-hpa
 
 RUN adduser -D instapxe
-
 COPY src/init /var/opt/instapxe/init
 COPY src/start /usr/sbin/start
+
+# Do not track further change to /instapxe.
+VOLUME /instapxe
+
 ENTRYPOINT ["/usr/sbin/start"]
 
 #CMD ["-L", "--verbose", "-m", "/instapxe/mapfile", "-u", "tftp", "--secure", "/instapxe"]

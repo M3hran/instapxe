@@ -12,16 +12,16 @@ do
         #check for user mounted volume
         if [ -d /instapxe ]; then
                 if [ -d /instapxe/boot ]; then
-                        ln -sf /instapxe/boot $i/boot
+                        cp -R /instapxe/boot $i/boot
                 fi
-                if [ -f /instapxe/menu ] && [[ $i == $INSTALLDIR/bios ]]; then
-                        ln -sf /instapxe/menu $i/pxelinux.cfg/default
+                if [ -f /instapxe/instapxe.menu ] && [[ $i == $INSTALLDIR/bios ]]; then
+                        ln -sf /instapxe/instapxe.menu $i/pxelinux.cfg/default
                 fi
-                if [ -f /instapxe/menu32 ] && [[ $i == $INSTALLDIR/efi32 ]]; then
-                        ln -sf /instapxe/menu32 $i/pxelinux.cfg/default
+                if [ -f /instapxe/instapxe.menu32 ] && [[ $i == $INSTALLDIR/efi32 ]]; then
+                        ln -sf /instapxe/instapxe.menu32 $i/pxelinux.cfg/default
                 fi
-                if [ -f /instapxe/menu64 ] && [[ $i == $INSTALLDIR/efi64 ]]; then
-                        ln -sf /instapxe/menu64 $i/pxelinux.cfg/default
+                if [ -f /instapxe/instapxe.menu64 ] && [[ $i == $INSTALLDIR/efi64 ]]; then
+                        ln -sf /instapxe/instapxe.menu64 $i/pxelinux.cfg/default
                 fi
         fi
         #check for splash
