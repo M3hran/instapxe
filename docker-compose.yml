@@ -3,7 +3,7 @@
 version: "3.7"
 
 services:
-  instapxe-tftp:
+  instapxe:
     image: instapxe/instapxe
     container_name: instapxe
     restart: always
