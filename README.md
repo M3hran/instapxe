@@ -20,7 +20,7 @@ Use like you would any other base image:
 
 ### Ports:
 - 69                     
- this port is export for netboot/pxe access
+ this port is used for netboot/pxe access
 
 ### Volumes:  
 - /instapxe/boot                               
