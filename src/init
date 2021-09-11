@@ -30,7 +30,7 @@ do
                 fi
         fi
         #check for splash
-        if [ ! $(head -5 $i/pxelinux.cfg/default | grep -qxF 'MENU INCLUDE pxelinux.cfg/instapxe.conf)') ]; then
+        if ! [ $(head -5 $i/pxelinux.cfg/default | grep -qxF 'MENU INCLUDE pxelinux.cfg/instapxe.conf)') ]; then
                 cp $i/pxelinux.cfg/default /tmp/tmpdefault
                 sed -i '/.*menu.c32.*/a MENU INCLUDE pxelinux.cfg\/instapxe.conf' /tmp/tmpdefault
                 cp /tmp/tmpdefault $i/pxelinux.cfg/default
@@ -40,5 +40,5 @@ do
 
 done
 
-echo `timestamp` "- instaPXE initizalied."
+echo `timestamp` "- instaPXE started."
 
