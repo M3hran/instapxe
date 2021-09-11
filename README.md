@@ -14,9 +14,8 @@ InstaPXE is a Preboot eXecution Environment needed to boot client systems from a
 ## How to use this image? 
 Use like you would any other base image:
 
-## Usage:
-
 ##
+Usage:
     docker run -p 69:69 instapxe/instapxe:latest -v ./bootfiles:/instapxe/boot -v ./menufiles/mybios.menu:/instapxe/instapxe.menu -v ./menufiles/myuefi.menu:/instapxe/instapxe.menu64
 
 ## License: 
