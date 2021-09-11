@@ -9,24 +9,24 @@ FROM alpine:3.12.0
 # 
 #      
 #########################################################################
+
+# Add syslinux binaries 
 ADD syslinux-6.04-pre2 /var/opt/instapxe
 
 # Add safe defaults that can be overriden easily.
-ADD instapxe_bios.cfg /var/opt/instapxe/bios/pxelinux.cfg/
-ADD instapxe_uefi32.cfg /var/opt/instapxe/efi32/pxelinux.cfg/
-ADD instapxe_uefi64.cfg /var/opt/instapxe/efi64/pxelinux.cfg/
+ADD config/instapxe_bios.cfg /var/opt/instapxe/bios/pxelinux.cfg/
+ADD config/instapxe_uefi32.cfg /var/opt/instapxe/efi32/pxelinux.cfg/
+ADD config/instapxe_uefi64.cfg /var/opt/instapxe/efi64/pxelinux.cfg/
 
 # Support clients that use backslash instead of forward slash.
 #COPY mapfile /instapxe/
 
-
-
-# http://forum.alpinelinux.org/apk/main/x86_64/tftp-hpa
-RUN apk add --no-cache tftp-hpa
+# install useful packages
+RUN apk add --no-cache tftp-hpa gettext
 
 RUN adduser -D instapxe
-COPY src/init /var/opt/instapxe/init
-COPY src/start /usr/sbin/start
+COPY init /var/opt/instapxe/init
+COPY start /usr/sbin/start
 
 # Do not track further change to /instapxe.
 VOLUME /instapxe

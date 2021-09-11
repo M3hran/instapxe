@@ -7,7 +7,7 @@ C_NAME = instapxe
 all: clean build install
 
 build: 
-	docker build -t $(NAME):$(VERSION) .
+	docker build -t $(NAME):$(VERSION) -f instapxebuild.docker . 
 
 clean: 
 	docker rm -vf $(C_NAME)

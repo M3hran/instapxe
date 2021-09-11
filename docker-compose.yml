@@ -1,0 +1,20 @@
+---
+
+version: "3.7"
+
+services:
+  instapxe-tftp:
+    image: instapxe/instapxe
+    container_name: instapxe
+    restart: always
+    environment:
+      - HTTP_HOST=192.168.1.220
+      - NFS_HOST=192.168.1.220
+    ports:
+      - 69:69/udp
+    volumes:
+      - ./boot:/instapxe/boot 
+      - ./menufiles/instapxe.menu:/instapxe/instapxe.menu
+      - ./menufiles/instapxe.menu64:/instapxe/instapxe.menu64
+
+
