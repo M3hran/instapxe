@@ -1,5 +1,5 @@
 NAME = instapxe/instapxe
-VERSION = 0.8
+VERSION = 0.9
 C_NAME = instapxe
 
 .PHONY: all build test tag_latest release install clean
