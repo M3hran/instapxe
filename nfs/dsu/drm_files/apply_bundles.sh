@@ -209,7 +209,7 @@ shutdowng() {
        finalize_reports
        echo "shutting down!"
        sleep 5
-       #shutdown -h now
+       shutdown -h now
 
 }
 
