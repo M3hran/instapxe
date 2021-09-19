@@ -1,4 +1,4 @@
 boot/
 http/
-nfs/
+nfs/reports/
 loki/data/

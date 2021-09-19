@@ -1,0 +1,3 @@
+/dsu           $HOST_NETWORK(ro,sync,no_subtree_check,no_root_squash)
+/reports       $HOST_NETWORK(rw,sync,no_subtree_check,no_root_squash)
+/spp           $HOST_NETWORK(ro,sync,no_subtree_check,no_root_squash)

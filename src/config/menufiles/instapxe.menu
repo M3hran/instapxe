@@ -1,5 +1,5 @@
 DEFAULT vesamenu.c32
-TIMEOUT 100 #100= 10 seconds
+TIMEOUT 50 #100= 10 seconds
 ONTIMEOUT DSU
 
 
@@ -15,10 +15,13 @@ LABEL SUM
         APPEND initrd=http://$HTTP_HOST/spp/initrd.img media=net root=/dev/ram0 splash hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=no iso1=nfs://$NFS_HOST/srv/spp/P03093_001_spp-Gen8.1-SPPGen81.4.iso 1opts=ro iso1mnt=/mnt/bootdevice network --bootproto=dhcp --device=em1 edd=off selinux=0
 	IPAPPEND 2
 
-
+LABEL WDS
+    MENU LABEL ^3) Windows Deployment Services (WDS)
+    COM32 pxechn.c32
+    append $WDS_HOST::Boot\x64\wdsnbp.com -W
 
 MENU BEGIN
-MENU LABEL ^3) Linux Distros
+MENU LABEL ^4) Linux Distros
 	LABEL Back
 		MENU LABEL Back..
                 TEXT HELP
@@ -51,11 +54,6 @@ MENU LABEL ^3) Linux Distros
                 MENU INCLUDE boot/centos/centos.menu
         MENU END
 MENU END
-
-LABEL WDS
-    MENU LABEL ^4) Windows Deployment Services (WDS)
-    COM32 pxechn.c32
-    append $WDS_HOST::Boot\x64\wdsnbp.com -W
 
 LABEL VMware
         MENU LABEL ^5) VMware ESXi

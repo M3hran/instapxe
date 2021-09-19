@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DSUConfig>
+<Repository Type="REPOSITORY"> 
+	<RepoLocation IP="$HOST_IP" Directory="DUP_REPO/11" UseLatestDSU="True"/> 
+</Repository>
+</DSUConfig>
