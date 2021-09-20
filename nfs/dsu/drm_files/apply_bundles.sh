@@ -328,7 +328,7 @@ case $GENERATION in
 #		;;
 esac	
 
-
+echo $EXITCODE
 case $EXITCODE in
 
 	34)
