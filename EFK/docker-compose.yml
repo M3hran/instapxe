@@ -1,0 +1,44 @@
+version: "3"
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1
+    container_name: elasticsearch
+    restart: always
+    environment:
+      - "discovery.type=single-node"
+      - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
+      - "ES_JAVA_OPTS=-Xms32G -Xmx32G" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 262144 # maximum number of open files for the Elasticsearch user, set to at least 65536 on modern systems
+        hard: 262144
+    volumes:
+      - ./data/elasticsearch:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9600:9600 # required for Performance Analyzer
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.13.1
+    container_name: kibana
+    restart: always
+    ports:
+      - 5601:5601
+    links:
+      - "elasticsearch"
+  fluentd:
+    build: ./fluentd
+    volumes:
+      - ./fluentd/conf:/fluentd/etc
+      - ../nfs/reports:/reports
+    links:
+      - "elasticsearch"
+    restart: always
+    container_name: fluentd
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+

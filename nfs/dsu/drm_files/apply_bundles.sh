@@ -222,7 +222,7 @@ print_model_svctag() {
 
 }
 
-NFSMOUNT="192.168.1.130:/reports"
+NFSMOUNT="172.17.1.3:/reports"
 WORKDIR="/opt/m3hran"
 MODEL=$(dmidecode -t 1 | awk '/Product Name:/ {print $4}')
 SVCTAG=$(dmidecode -t 1 | awk '/Serial Number:/ {print $3}')

@@ -2,3 +2,4 @@ boot/
 http/
 nfs/reports/
 loki/data/
+EFK/data/
