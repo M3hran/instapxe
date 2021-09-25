@@ -47,7 +47,7 @@ service_exists() {
 
 
 get_ip() {
-	hostname -I | awk '{print $1}'
+	hostname -I | awk '{print $2}'
 }
 get_network(){
 	myip=`get_ip`
@@ -81,12 +81,12 @@ case `get_os` in
 esac
 
 #set $HOST_IP envvar
-if ! env | grep "HOST_IP" >/dev/null 2>&1; then
+#if ! env | grep "HOST_IP" >/dev/null 2>&1; then
 	export HOST_IP=`get_ip`
 	echo "Generated: HOST_IP envar."
-else
-	echo "HOST_IP already set."
-fi
+#else
+#	echo "HOST_IP already set."
+#fi
 
 
 #set nfs exports
