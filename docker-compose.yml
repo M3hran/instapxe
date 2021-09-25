@@ -1,5 +1,4 @@
 ---
-
 version: "3.7"
 
 services:
@@ -13,7 +12,7 @@ services:
     ports:
       - 69:69/udp
     volumes:
-      - ./boot:/instapxe/boot 
+      - ./boot:/instapxe/boot
       - ./src/config/menufiles/instapxe.menu:/instapxe/instapxe.menu
       - ./src/config/menufiles/instapxe.menu64:/instapxe/instapxe.menu64
   instapxe-http:
@@ -44,4 +43,16 @@ services:
       - ./nfs/dsu:/dsu
       - ./nfs/spp:/spp
       - ./nfs/reports:/reports
-
+  instapxe-db:
+    image: mysql
+    container_name: instapxe-db
+    restart: always
+    environment:
+      - MYSQL_USER=instapxe
+      - MYSQL_PASSWORD=instapxe
+      - MYSQL_ROOT_PASSWORD=instapxe
+      - MYSQL_DATABASE=instapxe
+    ports:
+      - 3306:3306
+    volumes:
+      - ./data/instapxe_db:/var/lib/mysql
