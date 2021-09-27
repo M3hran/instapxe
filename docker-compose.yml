@@ -10,7 +10,7 @@ services:
     environment:
       - HTTP_HOST=$HOST_IP
       - NFS_HOST=$HOST_IP
-      - WDS_HOST=172.17.1.100
+      - WDS_HOST=$WDS_IP
     ports:
       - 69:69/udp
     volumes:
