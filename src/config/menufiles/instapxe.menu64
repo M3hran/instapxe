@@ -47,7 +47,7 @@ MENU END
 LABEL WDS
     MENU LABEL ^3) Windows Deployment Services (WDS)
     COM32 pxechn.c32
-    append 172.17.10.66::Boot\x64\wdsnbp.com -W
+    append $WDS_HOST::Boot\x64\wdsnbp.com -W
 
 LABEL VMware
         MENU LABEL ^4) VMware ESXi
