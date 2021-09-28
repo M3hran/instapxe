@@ -1,7 +1,7 @@
 #!/bin/bash
 start_time=$SECONDS
 timestamp() {
-  date +"%m/%d/%Y-%I:%M:%S %p" # current time
+  date +"%m/%d/%Y-%H:%M:%S" # current time
 }
 ntp_config() {
 
@@ -12,6 +12,33 @@ ntp_config() {
         systemctl restart ntpd >/dev/null 2&>1
         echo "Setting hw clock.."	
         hwclock  -w >/dev/null 2&>1
+}
+
+print_json () {
+
+	if [[ "$1" =~ ^(STARTED)$ ]]; then
+
+                JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svgtag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"Update\",\"msg\":\"started update\"}"
+
+	elif [[ "$1" =~ ^(REBOOT)$ ]]; then
+
+               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svgtag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"Update\",\"msg\":\"rebooting to apply updates\"}"
+
+        elif [[ "$1" =~ ^(COMPLETED)$ ]]; then
+
+ 	       JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svgtag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"Update\",\"msg\":\"completed updates\"}"
+
+	elif [[ "$1" =~ ^(EXITED)$ ]]; then
+
+               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svgtag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"error\",\"stage\":\"Update\",\"msg\":\"exited dsu with error\"}"
+	       
+        fi
+
+        [ -d $JSONPATH ] || mkdir -p $JSONPATH
+
+        echo $JSON_PAYLOAD >> $JSONFILE
+
+
 }
 
 service_exists() {
@@ -56,7 +83,7 @@ dsu_preview() {
 
         local gen=$1
 	echo ""
-        echo "Update started at: " `timestamp`
+        echo "Update started at: " `timestamp` && print_json "STARTED"
         echo "Starting dsu ..."
 
         if [[ $gen -eq 1 ]]; then
@@ -82,7 +109,7 @@ dsu_update() {
 
 	local gen=$1
         echo ""
-        echo "Update started at: " `timestamp`
+        echo "Update started at: " `timestamp` && print_json "STARTED"
         echo "Starting dsu ..."
 	#echo "##### Starting upgrade #####"
 
@@ -233,12 +260,14 @@ LOGFILE="$DSULOGPATHREMOTE/"$SVCTAG"_update_log.txt"
 IPMILOGPATH="$DSULOGPATHREMOTE/health_checks"
 IPMILOGPATH_PREBUILD="$IPMILOGPATH/pre_build"
 IPMILOGPATH_POSTBUILD="$IPMILOGPATH/post_build"
+JSONPATH="$DSULOGPATHREMOTE/json"
+JSONFILE="$JSONPATH/"$SVCTAG"_updates.json"
 
 mkdir -p $DSULOGPATHHOST 
 mkdir -p $WORKDIR > /dev/null 2>&1
 mount -t nfs -o nolock $NFSMOUNT $WORKDIR > /dev/null 2>&1
-mkdir -p $DSULOGPATHREMOTE $IPMILOGPATH $IPMILOGPATH_PREBUILD $IPMILOGPATH_POSTBUILD > /dev/null 2>&1
-touch $LOGFILE
+mkdir -p $DSULOGPATHREMOTE $IPMILOGPATH $IPMILOGPATH_PREBUILD $IPMILOGPATH_POSTBUILD $JSONPATH> /dev/null 2>&1
+touch $LOGFILE $JSONFILE
 (
 if ! service_exists ntpd; then
     ntp_config
@@ -349,7 +378,7 @@ case $EXITCODE in
 		print_model_svctag
 		elapsed_time
 		echo ""
-		echo "Update completed at: " `timestamp`
+		echo "Update completed at: " `timestamp` && print_json "COMPLETED"
 		echo "DONE. NO MORE APPLICABLE UPDATES."
 		echo ""
 		shutdowng
@@ -360,7 +389,7 @@ case $EXITCODE in
 
 
 		print_model_svctag
-		echo "Rebooting to apply updates at: " `timestamp`
+		echo "Rebooting to apply updates at: " `timestamp` && print_json "REBOOT"
 		elapsed_time
 		echo ""
 		echo "REBOOTING & APPLYING UPDATES..."
@@ -370,7 +399,7 @@ case $EXITCODE in
 
 	1)
 		print_model_svctag
-		echo "Updates exited at: " `timestamp`
+		echo "Updates exited at: " `timestamp` && print_json "EXITED"
 		elapsed_time
 		echo ""
 		echo "ERROR: DSU error" $EXITCODE
@@ -391,7 +420,7 @@ case $EXITCODE in
 #		esac
 		postbuild
 		print_model_svctag
-		echo "Updates completed at: " `timestamp`
+		echo "Updates completed at: " `timestamp` && print_json "COMPLETED" 
 		elapsed_time	
 		echo "" 
 		echo ""
