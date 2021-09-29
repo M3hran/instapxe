@@ -57,3 +57,16 @@ services:
       - 3306:3306
     volumes:
       - ./data/instapxe_db:/var/lib/mysql
+  instapxe-app:
+    build: ./web
+    container_name: instapxe-app
+    restart: always
+    environment:
+      - MYSQL_USER=instapxe
+      - MYSQL_PASSWORD=instapxe
+      - MYSQL_DATABASE=instapxe
+      - MYSQL_HOST=instapxe-db
+    ports:
+      - 5000:5000
+    volumes:
+      - ./web:/instapxe-app
