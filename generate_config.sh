@@ -48,7 +48,7 @@ service_exists() {
 
 
 get_ip() {
-	hostname -I | awk '{print $2}'
+	hostname -I | awk '{print $1}'
 }
 get_network(){
 	myip=`get_ip`

@@ -44,6 +44,7 @@ services:
       - ./nfs/dsu:/dsu
       - ./nfs/spp:/spp
       - ./nfs/reports:/reports
+      - ./nfs/instapxe_agent:/instapxe_agent  
   instapxe-db:
     image: mysql
     container_name: instapxe-db

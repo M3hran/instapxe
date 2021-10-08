@@ -1,3 +1,5 @@
-/dsu           $HOST_NETWORK(ro,sync,no_subtree_check,no_root_squash)
-/reports       $HOST_NETWORK(rw,sync,no_subtree_check,no_root_squash)
-/spp           $HOST_NETWORK(ro,sync,no_subtree_check,no_root_squash)
+/dsu             $HOST_NETWORK(ro,sync,no_subtree_check,no_root_squash)
+/reports         $HOST_NETWORK(rw,sync,no_subtree_check,no_root_squash)
+/spp             $HOST_NETWORK(ro,sync,no_subtree_check,no_root_squash)
+/instapxe_agent  $HOST_NETWORK(ro,sync,no_subtree_check,no_root_squash)
+

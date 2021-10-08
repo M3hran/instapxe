@@ -18,19 +18,19 @@ print_json () {
 
 	if [[ "$1" =~ ^(STARTED)$ ]]; then
 
-                JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svgtag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"Update\",\"msg\":\"started update\"}"
+                JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"Update\",\"msg\":\"started update\"}"
 
 	elif [[ "$1" =~ ^(REBOOT)$ ]]; then
 
-               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svgtag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"Update\",\"msg\":\"rebooting to apply updates\"}"
+               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"Update\",\"msg\":\"rebooting to apply updates\"}"
 
         elif [[ "$1" =~ ^(COMPLETED)$ ]]; then
 
- 	       JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svgtag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"Update\",\"msg\":\"completed updates\"}"
+ 	       JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"Update\",\"msg\":\"completed updates\"}"
 
 	elif [[ "$1" =~ ^(EXITED)$ ]]; then
 
-               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svgtag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"error\",\"stage\":\"Update\",\"msg\":\"exited dsu with error\"}"
+               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"error\",\"stage\":\"Update\",\"msg\":\"exited dsu with error\"}"
 	       
         fi
 

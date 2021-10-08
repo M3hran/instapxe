@@ -4,10 +4,12 @@ REPORTS_DIR=/opt/temp/instapxe/nfs/reports/build
 
 print_json() {
 
+
+	
 	P=$@
 	[ -d $d/json ] || mkdir -p $d/json
-	
-	echo $P >> $d/json/"$SVCTAG"_updates.json 
+	JSONFILE=$d/json/"$SVCTAG"_updates.json
+	grep -Fxq "$P" $JSONFILE || echo $P >> $JSONFILE
 
 }
 
@@ -32,10 +34,11 @@ parse_data() {
 		done
 
 	else
-
+	k=0
         for i in $VAL
         do
-           	if ! [[ "$i" =~ ^(AM|PM)$ ]]; then
+           
+		if ! [[ "$i" =~ ^(AM|PM)$ ]]; then
               	
 			TIME="$i"
            
@@ -55,7 +58,22 @@ parse_data() {
 			elif [[ "$1" =~ ^(COMPLETED)$ ]]; then
 
                                 JSON_PAYLOAD="{\"time\":\"$TIME\",\"manufacturer\":\"Dell\",\"svgtag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"Update\",\"msg\":\"completed updates\"}"
+		
+			elif [[ "$1" =~ ^(TIMESTAMP)$ ]]; then
+
+				if [ $k -eq 0 ]; then
+
+                                JSON_PAYLOAD="{\"time\":\"$TIME\",\"manufacturer\":\"Dell\",\"svgtag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"Update\",\"msg\":\"started update\"}"
+
+				elif [ $k -eq 2 ]; then
+		
+				JSON_PAYLOAD="{\"time\":\"$TIME\",\"manufacturer\":\"Dell\",\"svgtag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"Update\",\"msg\":\"completed updates\"}"
+			
+				fi
+				(( k++ ))
 			fi
+
+
 
 	   
 			[ -z "$JSON_PAYLOAD" ] || print_json $JSON_PAYLOAD 
@@ -73,7 +91,7 @@ parse_data() {
 for d in $REPORTS_DIR/*
 do
 	SVCTAG=$( echo $d | awk -F "/" '{print $8}')
-	UPDATE_LOG="$d"/"$SVCTAG"_update_log.txt
+	UPDATE_LOG="$d"/"$SVCTAG".log
         JSON_PAYLOAD=""	
 
 	if [ -f $UPDATE_LOG ]; then
@@ -85,13 +103,14 @@ do
                 ELAPSED=$( grep "^Elapsed time:" $UPDATE_LOG | awk '{print $3, $4, $5, $6, $7, $8, $9, $10}' )
                 [ -z "$ELAPSED " ] || parse_data "ELAPSED" $ELAPSED
 
-
 		REBOOTING=$( grep "^Rebooting to apply updates at:" $UPDATE_LOG | awk '{print $6, $7}' )
 		[ -z "$REBOOTING" ] || parse_data "REBOOT" $REBOOTING
 		
-
 		COMPLETED=$( grep "^Update completed at:" $UPDATE_LOG | awk '{print $4, $5}' )
                 [ -z "$COMPLETED" ] || parse_data "COMPLETED" $COMPLETED
+
+	        TIMESTAMP=$( grep "^timestamp:" $UPDATE_LOG | awk '{print $2, $3}' )
+                [ -z "$TIMESTAMP" ] || parse_data "TIMESTAMP" $TIMESTAMP
 
 
 	fi
