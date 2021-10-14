@@ -1,5 +1,7 @@
 boot/
 http/
 nfs/reports/
+nfs/sum_gen8/
+nfs/sum_latest/
 EFK/data/
 data/

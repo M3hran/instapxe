@@ -2,25 +2,25 @@
  
 ## Timestamp function for logging.
 function Get-TimeStamp {  
-    return "{0:MM/dd/yy}-{0:HH:mm:ss}" -f (Get-Date)  
+    return "{0:MM/dd/yyyy}-{0:HH:mm:ss}" -f (Get-Date)  
 }
 
 ## Install NFS-Client.
 #Install-WindowsFeature -Name NFS-Client
 
-#Write-Output "$(Get-TimeStamp) Installed NFS-Client." | Out-File -FilePath $logFile -Append
+#Write-Output "$(Get-TimeStamp) Installed NFS-Client." | Out-File -encoding utf8 -FilePath $logFile -Append
 
 ## Configure NFS user mapping registry values.
 #New-ItemProperty -Path "HKLM:\Software\Microsoft\ClientForNFS\CurrentVersion\Default" -Name "AnonymousGid" -Value 0 -PropertyType DWord
 #New-ItemProperty -Path "HKLM:\Software\Microsoft\ClientForNFS\CurrentVersion\Default" -Name "AnonymousUid" -Value 0 -PropertyType DWord
 
-#Write-Output "$(Get-TimeStamp) Created registry keys for NFS root user mapping." | Out-File -FilePath $logFile -Append
+#Write-Output "$(Get-TimeStamp) Created registry keys for NFS root user mapping." | Out-File -encoding utf8 -FilePath $logFile -Append
  
 ## Restart NFS-Client.
 #nfsadmin client stop
 #nfsadmin client start
 
-#Write-Output "$(Get-TimeStamp) Restarted NFS Cleint." | Out-File -FilePath $logFile -Append
+#Write-Output "$(Get-TimeStamp) Restarted NFS Cleint." | Out-File -encoding utf8 -FilePath $logFile -Append
 
 mount.exe -o anon 172.17.1.3:/reports Z:
 
@@ -58,7 +58,7 @@ If(!(test-path $LOGFILE))
       try {
 
         New-Item -ItemType File -Force -Path $LOGFILE -ErrorAction Stop
-        Write-Output "$(Get-TimeStamp) Logfile created..." | Out-File -FilePath $LOGFILE -Append | Out-Null
+        Write-Output "$(Get-TimeStamp) Logfile created..." | Out-File -encoding utf8 -FilePath $LOGFILE -Append | Out-Null
       }
       catch {
         throw $_.Exception.Message
@@ -84,7 +84,7 @@ If(!(test-path $JSONFILE))
       try {
 
         New-Item -ItemType File -Force -Path $JSONFILE -ErrorAction Stop | Out-Null
-        Write-Output "$(Get-TimeStamp) json file created..." | Out-File -FilePath $LOGFILE -Append
+        Write-Output "$(Get-TimeStamp) json file created..." | Out-File -encoding utf8 -FilePath $LOGFILE -Append
       }
       catch {
         throw $_.Exception.Message
@@ -107,7 +107,7 @@ https://instapxe.com/eula
 
 "@
 
-Write-Output $LEGALTXT | Out-File -FilePath $LOGFILE -Append
+Write-Output $LEGALTXT | Out-File -encoding utf8 -FilePath $LOGFILE -Append
 
 $TXT1 = @"
 
@@ -118,7 +118,7 @@ OS Image:           $OS_NAME
 
 "@
 
-Write-Output $TXT1 | Out-File -FilePath $LOGFILE -Append
+Write-Output $TXT1 | Out-File -encoding utf8 -FilePath $LOGFILE -Append
 
 $Inventory = New-Object System.Collections.ArrayList
 $ComputerInfo = New-Object System.Object
@@ -171,14 +171,14 @@ $ComputerCPU = ""
 $ComputerDisks = ""
 
 $Inventory | Export-Csv $SUMFILE
-$Inventory | ConvertTo-Json | Out-File -FilePath $SUMJSON
-Write-Output "$(Get-TimeStamp) System build summary created..." | Out-File -FilePath $LOGFILE -Append
+$Inventory | ConvertTo-Json | Out-File -encoding utf8 -FilePath $SUMJSON
+Write-Output "$(Get-TimeStamp) System build summary created..." | Out-File -encoding utf8 -FilePath $LOGFILE -Append
 
 $jsonpayload="{`"time`":`"$(Get-TimeStamp)`",`"manufacturer`":`"$MANUFACTURER`",`"svctag`":`"$SVCTAG`",`"model`":`"$MODEL`",`"level`":`"info`",`"stage`":`"imaging`",`"os_name`":`"$OS_NAME`",`"msg`":`"completed`"}"
 
-Write-Output $jsonpayload | Out-File -FilePath $JSONFILE -Append
+Write-Output $jsonpayload | Out-File -encoding utf8 -FilePath $JSONFILE -Append
 
-Write-Output "$(Get-TimeStamp) OS Image Deployment Completed. Shutting Down..." | Out-File -FilePath $LOGFILE -Append
+Write-Output "$(Get-TimeStamp) OS Image Deployment Completed. Shutting Down..." | Out-File -encoding utf8 -FilePath $LOGFILE -Append
 
 
 shutdown.exe /s

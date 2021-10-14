@@ -1,5 +1,5 @@
 DEFAULT vesamenu.c32
-TIMEOUT 100 #100= 10 seconds
+TIMEOUT 50 #100= 10 seconds
 ONTIMEOUT DSU
 
 
@@ -8,9 +8,30 @@ LABEL DSU
 	KERNEL boot/dsu/sa.1
         APPEND initrd=boot/dsu/sa.2 root=live:http://$HTTP_HOST/boot/dsu/LiveOS/squashfs.img rootfstype=auto rd.live.image rd.writable.fsimg rw DEBUG=0 share_type=nfs share_location=$NFS_HOST:/dsu share_opts=nolock loglevel=7 BUILD=0 selinux=0 edd=off rd.md=0 rd.dm=0 quiet – share_script=drm_files/apply_bundles.sh
 
+LABEL SUMGEN8
+        MENU LABEL ^2) HP Smart Update Manager (SUM)-- Gen 8
+        KERNEL boot/sum_gen8/vmlinuz
+        APPEND initrd=boot/sum_gen8/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://$NFS_HOST/sum_gen8 iso1opts=nolock iso1mnt=/mnt/bootdevice
+
+LABEL SUMLATEST
+        MENU LABEL ^3) HP Smart Update Manager (SUM)-- Latest
+        KERNEL boot/sum_latest/vmlinuz
+        APPEND initrd=boot/sum_latest/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://$NFS_HOST/sum_latest iso1opts=nolock iso1mnt=/mnt/bootdevice
+
+#LABEL SPP
+#  	MENU LABEL ^2) HP Service Pack for Proliant (SPP) 
+#  	KERNEL boot/spp/vmlinuz
+#  	APPEND initrd=boot/spp/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://$NFS_HOST/spp iso1mnt=/mnt/bootdevice
+
+LABEL WDS
+    MENU LABEL ^4) Windows Deployment Services (WDS)
+    COM32 pxechn.c32
+    append $WDS_HOST::Boot\x64\wdsnbp.com -W
+
+
 
 MENU BEGIN
-MENU LABEL ^2) Linux Distros
+MENU LABEL ^5) Linux Distros
 	LABEL Back
 		MENU LABEL Back..
                 TEXT HELP
@@ -44,18 +65,14 @@ MENU LABEL ^2) Linux Distros
         MENU END
 MENU END
 
-LABEL WDS
-    MENU LABEL ^3) Windows Deployment Services (WDS)
-    COM32 pxechn.c32
-    append $WDS_HOST::Boot\x64\wdsnbp.com -W
 
 LABEL VMware
-        MENU LABEL ^4) VMware ESXi
+        MENU LABEL ^6) VMware ESXi
         COM32 pxechn.c32
         append boot/vmware/pxelinux.0
 
 MENU BEGIN Tools and Utilities
-MENU LABEL ^5) Tools and Utilities
+MENU LABEL ^7) Tools and Utilities
         LABEL Back
         MENU LABEL Back..
         TEXT HELP
@@ -67,7 +84,7 @@ MENU LABEL ^5) Tools and Utilities
 MENU END
 
 LABEL BootLocal
-MENU LABEL ^6) BootLocal
+MENU LABEL ^8) BootLocal
         localboot 0
         TEXT HELP
         Boot to local hard disk.

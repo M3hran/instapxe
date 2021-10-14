@@ -18,7 +18,7 @@ services:
       - ./src/config/menufiles/instapxe.menu64:/instapxe/instapxe.menu64
   instapxe-http:
     image: nginx:alpine
-    container_name: instapxe-httpd
+    container_name: instapxe-http
     ports:
       - 80:80
     volumes:
@@ -28,7 +28,7 @@ services:
       - ./nfs/reports:/usr/share/nginx/html/reports
   instapxe-nfs:
     image: erichough/nfs-server
-    container_name: instapxe-nfsd
+    container_name: instapxe-nfs
     privileged: true
     ports:
       - 2049:2049
@@ -42,7 +42,8 @@ services:
     volumes:
       - ./config/exports:/etc/exports
       - ./nfs/dsu:/dsu
-      - ./nfs/spp:/spp
+      - ./nfs/sum_gen8:/sum_gen8
+      - ./nfs/sum_latest:/sum_latest
       - ./nfs/reports:/reports
       - ./nfs/instapxe_agent:/instapxe_agent  
   instapxe-db:
