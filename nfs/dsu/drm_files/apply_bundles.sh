@@ -41,14 +41,6 @@ print_json () {
 
 }
 
-install_megacli(){
-
-	[ -f /opt/MegaRAID/MegaCli/MegaCli64 ] ||  rpm -ivh /opt/dell/toolkit/systems/drm_files/MegaCli-8.07.14-1.noarch.rpm
-	yum install -y sg3_utils
-	megacli=/opt/MegaRAID/MegaCli/MegaCli64
-}
-
-
 service_exists() {
     local n=$1
     if [[ $(systemctl list-units --all -t service --full --no-legend "$n.service" | sed 's/^\s*//g' | cut -f1 -d' ') == $n.service ]]; then
@@ -223,23 +215,6 @@ clear_eventlogs(){
 	ipmitool sel clear 
 
 }
-gather_hdd_data(){
-
-	install_megacli
-	echo "Gathering Controller & Disk data.."
-	$megacli -ShowSummary -aALL > "$HDDLOGPATH"/"$SVCTAG"_megacli_summary.txt
-	$megacli -PDList -aALL > "$HDDLOGPATH"/"$SVCTAG"_physicaldisk_list.txt
-	$megacli -LDPDInfo -aALL > "$HDDLOGPATH"/"$SVCTAG"_physicaldisk_details.txt
-	$megacli -LDInfo -Lall -aALL > "$HDDLOGPATH"/"$SVCTAG"_virtualdrive_info.txt
-	$megacli -EncInfo -aALL > "$HDDLOGPATH"/"$SVCTAG"_enclosure_info.txt
-	$megacli -AdpAllInfo -aALL > "$HDDLOGPATH"/"$SVCTAG"_controller_info.txt
-	$megacli -CfgDsply -aALL > "$HDDLOGPATH"/"$SVCTAG"_controller_config_info.txt
-	$megacli -AdpBbuCmd -aALL > "$HDDLOGPATH"/"$SVCTAG"_bbu_info.txt
-	$megacli -AdpPR -Info -aALL > "$HDDLOGPATH"/"$SVCTAG"_patrolread_state.txt
-	
-
-
-}
 prebuild() {
 	
 	echo "Gathering sensors data.."
@@ -255,8 +230,6 @@ postbuild() {
         ipmitool sel list > $IPMILOGPATH_POSTBUILD/"$SVCTAG"_1_bios_errors.txt
         ipmitool sdr list > $IPMILOGPATH_POSTBUILD/"$SVCTAG"_2_sensors_health_summary.txt
 	gather_sensor_data post_build
-	gather_hdd_data
-	
 }
 shutdowng() {
 
@@ -276,9 +249,9 @@ print_model_svctag() {
 
 }
 
-NFSMOUNT="172.17.1.3:/reports"
+NFSMOUNT="192.168.1.5:/reports"
 WORKDIR="/opt/m3hran"
-MODEL=$(dmidecode -t 1 | awk '/Product Name:/ {print $4,$5}')
+MODEL=$(dmidecode -t 1 | awk '/Product Name:/ {print $4}')
 SVCTAG=$(dmidecode -t 1 | awk '/Serial Number:/ {print $3}')
 GENERATION="$(dmidecode -t 1 | awk '/Product Name:/ {print substr($4,3,1)}')"
 DSULOGPATHHOST=/usr/libexec/dell_dup
@@ -287,20 +260,18 @@ LOGFILE="$DSULOGPATHREMOTE/"$SVCTAG"_update_log.txt"
 IPMILOGPATH="$DSULOGPATHREMOTE/health_checks"
 IPMILOGPATH_PREBUILD="$IPMILOGPATH/pre_build"
 IPMILOGPATH_POSTBUILD="$IPMILOGPATH/post_build"
-HDDLOGPATH="$DSULOGPATHREMOTE/controller_hdd_info"
 JSONPATH="$DSULOGPATHREMOTE/json"
 JSONFILE="$JSONPATH/"$SVCTAG"_updates.json"
 
 mkdir -p $DSULOGPATHHOST 
 mkdir -p $WORKDIR > /dev/null 2>&1
 mount -t nfs -o nolock $NFSMOUNT $WORKDIR > /dev/null 2>&1
-mkdir -p $DSULOGPATHREMOTE $IPMILOGPATH $IPMILOGPATH_PREBUILD $IPMILOGPATH_POSTBUILD $JSONPATH $HDDLOGPATH> /dev/null 2>&1
+mkdir -p $DSULOGPATHREMOTE $IPMILOGPATH $IPMILOGPATH_PREBUILD $IPMILOGPATH_POSTBUILD $JSONPATH> /dev/null 2>&1
 touch $LOGFILE $JSONFILE
 (
 if ! service_exists ntpd; then
     ntp_config
 fi
-
 
 if ! [ -f $IPMILOGPATH_PREBUILD/"$SVCTAG"_1_bios_errors.txt ]; then
 

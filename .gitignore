@@ -1,5 +1,8 @@
 boot/
-http/
+http/instapxe_agent/squashfs.img
+http/dsu/LiveOS/squashfs.img
+http/DUP_REPO/
+http/reports/
 nfs/reports/
 nfs/sum_gen8/
 nfs/sum_latest/

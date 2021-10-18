@@ -117,7 +117,7 @@ fi
 
 
 #set nfs module
-modprobe nfs 
+modprobe nfsd 
 
 
 

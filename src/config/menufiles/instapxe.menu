@@ -1,12 +1,17 @@
 DEFAULT vesamenu.c32
 TIMEOUT 50 #100= 10 seconds
-ONTIMEOUT DSU
+ONTIMEOUT INSTAPXE
 
+LABEL INSTAPXE
+	MENU LABEL ^0) instaPXE Agent
+	KERNEL http://$HTTP_HOST/instapxe_agent/instapxe.1
+        APPEND initrd=http://$HTTP_HOST/instapxe_agent/instapxe.2 root=live:http://$HTTP_HOST/instapxe_agent/squashfs.img rootfstype=auto rd.live.image rd.writable.fsimg rw DEBUG=0 share_type=nfs share_location=$NFS_HOST:/instapxe_agent share_opts=nolock loglevel=7 BUILD=0 selinux=0 edd=off rd.md=0 rd.dm=0 quiet – share_script=instapxe_agent_src/instapxe_agent.sh
 
 LABEL DSU
 	MENU LABEL ^1) Dell System Update (DSU)
-	KERNEL http://$HTTP_HOST/boot/dsu/sa.1
-        APPEND initrd=http://$HTTP_HOST/boot/dsu/sa.2 root=live:http://$HTTP_HOST/boot/dsu/LiveOS/squashfs.img rootfstype=auto rd.live.image rd.writable.fsimg rw DEBUG=0 share_type=nfs share_location=$NFS_HOST:/dsu share_opts=nolock loglevel=7 BUILD=0 selinux=0 edd=off rd.md=0 rd.dm=0 quiet – share_script=drm_files/apply_bundles.sh
+	KERNEL http://$HTTP_HOST/dsu/sa.1
+        APPEND initrd=http://$HTTP_HOST/dsu/sa.2 root=live:http://$HTTP_HOST/dsu/LiveOS/squashfs.img rootfstype=auto rd.live.image rd.writable.fsimg rw DEBUG=0 share_type=nfs share_location=$NFS_HOST:/dsu share_opts=nolock loglevel=7 BUILD=0 selinux=0 edd=off rd.md=0 rd.dm=0 quiet – share_script=drm_files/apply_bundles.sh
+
 
 
 LABEL SUMGEN8
@@ -19,14 +24,6 @@ LABEL SUMLATEST
         KERNEL boot/sum_latest/vmlinuz
         APPEND initrd=boot/sum_latest/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://$NFS_HOST/sum_latest iso1opts=nolock iso1mnt=/mnt/bootdevice
 
-
-
-
-#LABEL SUM
-#	MENU LABEL ^2) HPE Smart Update Manager (SUM)
-#	KERNEL http://$HTTP_HOST/spp/vmlinuz
-#        APPEND initrd=http://$HTTP_HOST/spp/initrd.img media=net root=/dev/ram0 splash hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=no iso1=nfs://$NFS_HOST/srv/spp/P03093_001_spp-Gen8.1-SPPGen81.4.iso 1opts=ro iso1mnt=/mnt/bootdevice network --bootproto=dhcp --device=em1 edd=off selinux=0
-#	IPAPPEND 2
 
 LABEL WDS
     MENU LABEL ^4) Windows Deployment Services (WDS)
