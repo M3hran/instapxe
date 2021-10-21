@@ -4,34 +4,26 @@ start_time=$SECONDS
 timestamp() {
   date +"%m/%d/%Y-%H:%M:%S" # current time
 }
-#ntp_config() {
-#
-#	echo "Configuring NTP..."
-#        yum -y install ntp ntpdate >/dev/null 2&>1
-#        systemctl start ntpd >/dev/null 2&>1
-#        ntpdate -u -s pool.ntp.org >/dev/null 2&>1
-#        systemctl restart ntpd >/dev/null 2&>1
-#        echo "Setting hw clock.."	
-#        hwclock  -w >/dev/null 2&>1
-#}
 
 print_json () {
 
 	if [[ "$1" =~ ^(STARTED)$ ]]; then
 
-                JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svgtag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"Update\",\"msg\":\"started update\"}"
+                JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"hw_scan\",\"msg\":\"started hardware scan.\"}"
 
 	elif [[ "$1" =~ ^(REBOOT)$ ]]; then
 
-               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svgtag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"Update\",\"msg\":\"rebooting to apply updates\"}"
+               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"hw_scan\",\"msg\":\"rebooting to apply updates\"}"
 
         elif [[ "$1" =~ ^(COMPLETED)$ ]]; then
+		elapsed=$(( SECONDS - start_time  ))
+		atime="$(eval "echo $(date -ud "@$elapsed" +'$((%s/3600/24 )) days %H hr %M min %S sec')")"
 
- 	       JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svgtag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"Update\",\"msg\":\"completed updates\"}"
+		JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"hw_scan\",\"msg\":\"completed hardware scan\",\"elapsed\":\"$atime\"}"
 
 	elif [[ "$1" =~ ^(EXITED)$ ]]; then
 
-               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svgtag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"error\",\"stage\":\"Update\",\"msg\":\"exited dsu with error\"}"
+               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"error\",\"stage\":\"hw_scan\",\"msg\":\"exited hardware scan with error\"}"
 	       
         fi
 
@@ -59,100 +51,9 @@ elapsed_time() {
 	echo ""
 }
 
-#dsu_inventory() {
-#
-#	local gen=$1
-#	if [[ $gen -eq 1 ]]; then
-#
-#		dsu \
-#               		--inventory \
-#               		--config=/opt/dell/toolkit/systems/drm_files/dsuconfig_11.xml \
-#               		--output-inventory-xml=$DSULOGPATHREMOTE/"$SVCTAG"_update_summary.xml
-#	fi
-#        if [[ $gen -eq 2 ]]; then
-#
-#                dsu \
-#                        --inventory \
-#                        --config=/opt/dell/toolkit/systems/drm_files/dsuconfig.xml \
-#                        --output-inventory-xml=$DSULOGPATHREMOTE/"$SVCTAG"_update_summary.xml
-#        fi
 
 
-#}
-
-#dsu_preview() {
-#
-#        local gen=$1
-#	echo ""
-#        echo "Update started at: " `timestamp` && print_json "STARTED"
-#        echo "Starting dsu ..."
-#
-#        if [[ $gen -eq 1 ]]; then
-#
-#                dsu \
-#                        -p \
-#                        --ignore-signature \
-#                        --config=/opt/dell/toolkit/systems/drm_files/dsuconfig_11.xml | tee $DSULOGPATHREMOTE/"$SVCTAG"_updates.scan
-#
-#        fi
-#        if [[ $gen -eq 2 ]]; then
-#
-#		dsu \
-#                        -p \
-#                        --ignore-signature \
-#                        --config=/opt/dell/toolkit/systems/drm_files/dsuconfig.xml | tee $DSULOGPATHREMOTE/"$SVCTAG"_updates.scan
-#
-#        fi
-#
-#}
-
-#dsu_update() {
-#
-#	local gen=$1
-#        echo ""
-#        echo "Update started at: " `timestamp` && print_json "STARTED"
-#        echo "Starting dsu ..."
-	#echo "##### Starting upgrade #####"
-
-
-
-#        if [[ $gen -eq 1 ]]; then
-#
-#		dsu \
-#	                --non-interactive \
-#                        --ignore-signature \
-#                        --config=/opt/dell/toolkit/systems/drm_files/dsuconfig_11.xml
-#	fi
-#        if [[ $gen -eq 2 ]]; then
-#
-#                dsu \
-#                        --non-interactive \
-#                        --ignore-signature \
-#                        --config=/opt/dell/toolkit/systems/drm_files/dsuconfig.xml
-#
-#	fi
-#}
-
-
-finalize_reports() {
-
-	#cleanup update preview summary report
-	if [ -f $DSULOGPATHREMOTE/"$SVCTAG"_updates.scan ]; then
-		sed -n '/^.*Update Preview/,/^.*NOTE:/w '$DSULOGPATHREMOTE'/'$SVCTAG'_applicable_updates.txt' $DSULOGPATHREMOTE/"$SVCTAG"_updates.scan
-        	rm $DSULOGPATHREMOTE/"$SVCTAG"_updates.scan
-	fi
-
-	#cleanup firmware inventory report
-	if [ -f $DSULOGPATHREMOTE/"$SVCTAG"_update_summary.xml ]; then
-		chmod 644 $DSULOGPATHREMOTE/"$SVCTAG"_update_summary.xml
-	fi
-
-	#copy xml file to reports folder
-	if [ -f $DSULOGPATHHOST/inv.xml ]; then
-		cp $DSULOGPATHHOST/inv.xml $DSULOGPATHREMOTE/"$SVCTAG"_firmware_inv.xml
-                chmod 644 $DSULOGPATHREMOTE/"$SVCTAG"_firmware_inv.xml
-        fi
-
+gather_dmidecode() {
 	#generate HW inventory report
  	dmidecode > $DSULOGPATHREMOTE/"$SVCTAG"_hardware_inv.txt && sed -i '/dmidecode.*/d' $DSULOGPATHREMOTE/"$SVCTAG"_hardware_inv.txt
 
@@ -211,34 +112,32 @@ gather_sensor_data() {
 
 }
 
+gather_hdd_data(){
+	megacli=/opt/MegaRAID/MegaCli/MegaCli64
+        echo "Gathering Controller & Disk data.."
+        $megacli -ShowSummary -aALL > "$HDDLOGPATH"/"$SVCTAG"_megacli_summary.txt
+        $megacli -PDList -aALL > "$HDDLOGPATH"/"$SVCTAG"_physicaldisk_list.txt
+        $megacli -LDPDInfo -aALL > "$HDDLOGPATH"/"$SVCTAG"_physicaldisk_details.txt
+        $megacli -LDInfo -Lall -aALL > "$HDDLOGPATH"/"$SVCTAG"_virtualdrive_info.txt
+        $megacli -EncInfo -aALL > "$HDDLOGPATH"/"$SVCTAG"_enclosure_info.txt
+        $megacli -AdpAllInfo -aALL > "$HDDLOGPATH"/"$SVCTAG"_controller_info.txt
+        $megacli -CfgDsply -aALL > "$HDDLOGPATH"/"$SVCTAG"_controller_config_info.txt
+        $megacli -AdpBbuCmd -aALL > "$HDDLOGPATH"/"$SVCTAG"_bbu_info.txt
+        $megacli -AdpPR -Info -aALL > "$HDDLOGPATH"/"$SVCTAG"_patrolread_state.txt
+
+}
+
+
 clear_eventlogs(){
-	
 	ipmitool sel clear 
-
 }
-prebuild() {
-	
-	echo "Gathering sensors data.."
-	ipmitool sel list > $IPMILOGPATH_PREBUILD/"$SVCTAG"_1_bios_errors.txt
-	ipmitool sdr list > $IPMILOGPATH_PREBUILD/"$SVCTAG"_2_sensors_health_summary.txt
-	clear_eventlogs
 
-}
-#postbuild() {
-#
-#
-#        echo "Gathering sensors data.."
-#        ipmitool sel list > $IPMILOGPATH_POSTBUILD/"$SVCTAG"_1_bios_errors.txt
-#        ipmitool sdr list > $IPMILOGPATH_POSTBUILD/"$SVCTAG"_2_sensors_health_summary.txt
-#	gather_sensor_data post_build
-#}
 shutdowng() {
 
        finalize_reports
        echo "shutting down!"
        sleep 5
        shutdown -h now
-
 }
 
 print_sysinfo() {
@@ -251,7 +150,7 @@ print_sysinfo() {
 
 }
 
-NFSMOUNT="192.168.1.5:/reports"
+NFSMOUNT="172.17.1.3:/reports"
 WORKDIR="/opt/m3hran"
 MANUFACTURER=$(dmidecode -t 1 | awk '/Manufacturer:/ {print $2,$3}')
 MODEL=$(dmidecode -t 1 | awk '/Product Name:/ {print $4,$5}')
@@ -259,22 +158,18 @@ SVCTAG=$(dmidecode -t 1 | awk '/Serial Number:/ {print $3}')
 GENERATION="$(dmidecode -t 1 | awk '/Product Name:/ {print substr($4,3,1)}')"
 DSULOGPATHHOST=/usr/libexec/dell_dup
 DSULOGPATHREMOTE="$WORKDIR/build/$SVCTAG"
-LOGFILE="$DSULOGPATHREMOTE/"$SVCTAG"_update_log.txt"
+LOGFILE="$DSULOGPATHREMOTE/"$SVCTAG"_hw_scan_log.txt"
 IPMILOGPATH="$DSULOGPATHREMOTE/health_checks"
-IPMILOGPATH_PREBUILD="$IPMILOGPATH/pre_build"
-IPMILOGPATH_POSTBUILD="$IPMILOGPATH/post_build"
+IPMILOGPATH_HWSCAN="$IPMILOGPATH/hw_scan"
 JSONPATH="$DSULOGPATHREMOTE/json"
-JSONFILE="$JSONPATH/"$SVCTAG"_updates.json"
+JSONFILE="$JSONPATH/"$SVCTAG"_instapxe.json"
 
 mkdir -p $DSULOGPATHHOST 
 mkdir -p $WORKDIR > /dev/null 2>&1
 mount -t nfs -o nolock $NFSMOUNT $WORKDIR > /dev/null 2>&1
-mkdir -p $DSULOGPATHREMOTE $IPMILOGPATH $IPMILOGPATH_PREBUILD $IPMILOGPATH_POSTBUILD $JSONPATH> /dev/null 2>&1
+mkdir -p $DSULOGPATHREMOTE $IPMILOGPATH $IPMILOGPATH_HWSCAN $JSONPATH> /dev/null 2>&1
 touch $LOGFILE $JSONFILE
 (
-#if ! service_exists ntpd; then
-#    ntp_config
-#fi
 
 shopt -s expand_aliases > /dev/null 2>&1
 alias 'rpm=rpm --ignoresize' > /dev/null 2>&1
@@ -297,11 +192,18 @@ echo "https://instapxe.com/eula"
 echo ""
 #echo "Automated System Update Initializing..."
 print_sysinfo
+echo "Scan started at: " `timestamp` && print_json "STARTED"
 
-if ! [ -f $IPMILOGPATH_PREBUILD/"$SVCTAG"_1_bios_errors.txt ]; then
+#clear old bios logs
+clear_eventlogs
+#gather IPMI data
+gather_sensor_data hw_scan
+#gather dmidecode data
+gather_dmidecode
+#gather megacli data
+gather_hdd_data
+#gather smart data
 
-        prebuild
-fi
 
 MAKE=$(echo "$MANUFACTURER" | sed -e 's:^Dell$:Dell:' -e 's:^HP$:HP:' -e 's:^VMware$:VMware:')
 
@@ -366,71 +268,20 @@ esac
 echo $EXITCODE
 case $EXITCODE in
 
-	34)
-
-#		case $GENERATION in
-#			1)
-#				dsu_inventory 1
-#
-#				;;
-#			*)
-#				
-#				dsu_inventory 2
-#
-#				;;
-#		esac
-
-		postbuild
-		print_sysinfo
-		elapsed_time
-		echo ""
-		echo "Update completed at: " `timestamp` && print_json "COMPLETED"
-		echo "DONE. NO MORE APPLICABLE UPDATES."
-		echo ""
-		shutdowng
-
-		;;
-	
-	8 | 24 | 25 | 26 )
-
-
-		print_sysinfo
-		echo "Rebooting to apply updates at: " `timestamp` && print_json "REBOOT"
-		elapsed_time
-		echo ""
-		echo "REBOOTING & APPLYING UPDATES..."
-		sleep 3
-		reboot
-		;;	
 
 	1)
 		print_sysinfo
-		echo "Updates exited at: " `timestamp` && print_json "EXITED"
-		elapsed_time
+		echo "Scan exited at: " `timestamp` && print_json "EXITED"
 		echo ""
-		echo "ERROR: DSU error" $EXITCODE
+		echo "ERROR: " $EXITCODE
 		echo ""
-		finalize_reports
 		;;
 	*)
-		#case $GENERATION in
-                #        1)
-                #                dsu_inventory 1
-#
-#                                ;;
-#                        *)
-#
-#                                dsu_inventory 2
-#
-#                                ;;
-#		esac
-		postbuild
 		print_sysinfo
-		echo "Updates completed at: " `timestamp` && print_json "COMPLETED" 
+		echo "Scan completed at: " `timestamp` && print_json "COMPLETED" 
 		elapsed_time	
 		echo "" 
 		echo ""
-		#shutdowng
 		;;
 esac
 

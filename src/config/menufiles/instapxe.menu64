@@ -4,8 +4,8 @@ ONTIMEOUT INSTAPXE
 
 LABEL INSTAPXE
 MENU LABEL ^0) instaPXE Agent
-        KERNEL http://$HTTP_HOST/instapxe_agent/instapxe.1
-        APPEND initrd=http://$HTTP_HOST/instapxe_agent/instapxe.2 root=live:http://$HTTP_HOST/instapxe_agent/squashfs.img rootfstype=auto rd.live.image rd.writable.fsimg rw DEBUG=0 share_type=nfs share_location=$NFS_HOST:/instapxe_agent share_opts=nolock loglevel=7 BUILD=0 selinux=0 edd=off rd.md=0 rd.dm=0 quiet – share_script=instapxe_agent_src/instapxe_agent.sh
+        KERNEL boot/instapxe_agent/instapxe.1
+        APPEND initrd=boot/instapxe_agent/instapxe.2 root=live:http://$HTTP_HOST/instapxe_agent/squashfs.img rootfstype=auto rd.live.image rd.writable.fsimg rw DEBUG=0 share_type=nfs share_location=$NFS_HOST:/instapxe_agent share_opts=nolock loglevel=7 BUILD=0 selinux=0 edd=off rd.md=0 rd.dm=0 quiet – share_script=instapxe_agent_src/instapxe_agent.sh
 
 LABEL DSU
 	MENU LABEL ^1) Dell System Update (DSU)
