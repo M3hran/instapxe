@@ -109,7 +109,7 @@ if [ -f $WORKDIR/config/dsuconfig_11.xml.default ]; then
 fi
 if [ -f $WORKDIR/src/config/helper_files/dsu_helper.sh ]; then
 	insert="NFSMOUNT=\""$HOST_IP":/reports"\"
-	sed  -e "s@^NFSMOUNT=.*@$insert@"  $WORKDIR/src/config/helper_files/dsu_helper.sh  > $WORKDIR/nfs/dsu/drm_files/apply_bundles.sh
+	sed  -e "s@^NFSMOUNT=.*@$insert@"  $WORKDIR/src/config/helper_files/instapxe_agent.sh  > $WORKDIR/nfs/dsu/drm_files/apply_bundles.sh
         echo "Generated: dsu helper file file."
 fi
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-final_report=/opt/temp/instapxe/nfs/instapxe_agent/final_report.csv
+final_report=/opt/temp/instapxe/nfs/reports/final_report.csv
 
 [ -f "$final_report" ] || touch $final_report
 
