@@ -1,19 +1,40 @@
 #!/bin/bash
+####################################################################
+#
+# 2021 instapxe (c) copyright
+# https://instapxe.com/eula
+# dsu_helper.sh
+# maintained by: m3hran
+#
+####################################################################
+
 printf "\033c"
 start_time=$SECONDS
+NTPSERVER="0.0.0.0"
+NFSMOUNT="0.0.0.0:/reports"
+WORKDIR="/opt/m3hran"
+MODEL=$(dmidecode -t 1 | awk '/Product Name:/ {print $4,$5}')
+SVCTAG=$(dmidecode -t 1 | awk '/Serial Number:/ {print $3}')
+GENERATION="$(dmidecode -t 1 | awk '/Product Name:/ {print substr($4,3,1)}')"
+DSULOGPATHHOST=/usr/libexec/dell_dup
+DSULOGPATHREMOTE="$WORKDIR/build/$SVCTAG"
+LOGFILE="$DSULOGPATHREMOTE/"$SVCTAG"_update_log.txt"
+IPMILOGPATH="$DSULOGPATHREMOTE/health_checks"
+IPMILOGPATH_PREBUILD="$IPMILOGPATH/pre_build"
+IPMILOGPATH_POSTBUILD="$IPMILOGPATH/post_build"
+HDDLOGPATH="$DSULOGPATHREMOTE/controller_hdd_info"
+JSONPATH="$DSULOGPATHREMOTE/json"
+JSONFILE="$JSONPATH/"$SVCTAG"_updates.json"
+
+#ntpdate -u $NTPSERVER
+mkdir -p $DSULOGPATHHOST
+mkdir -p $WORKDIR > /dev/null 2>&1
+mount -t nfs -o nolock $NFSMOUNT $WORKDIR > /dev/null 2>&1
+mkdir -p $DSULOGPATHREMOTE $IPMILOGPATH $IPMILOGPATH_PREBUILD $IPMILOGPATH_POSTBUILD $JSONPATH $HDDLOGPATH> /dev/null 2>&1
+touch $LOGFILE $JSONFILE
 
 timestamp() {
   date +"%m/%d/%Y-%H:%M:%S" # current time
-}
-ntp_config() {
-
-	echo "Configuring NTP..."
-        yum -y install ntp ntpdate >/dev/null 2&>1
-        systemctl start ntpd >/dev/null 2&>1
-        ntpdate -u -s pool.ntp.org >/dev/null 2&>1
-        systemctl restart ntpd >/dev/null 2&>1
-        echo "Setting hw clock.."	
-        hwclock  -w >/dev/null 2&>1
 }
 
 print_json () {
@@ -47,14 +68,6 @@ print_json () {
 
 
 }
-
-install_megacli(){
-
-	[ -f /opt/MegaRAID/MegaCli/MegaCli64 ] ||  rpm -ivh /opt/dell/toolkit/systems/drm_files/MegaCli-8.07.14-1.noarch.rpm
-	yum install -y sg3_utils
-	megacli=/opt/MegaRAID/MegaCli/MegaCli64
-}
-
 
 service_exists() {
     local n=$1
@@ -232,7 +245,7 @@ clear_eventlogs(){
 }
 gather_hdd_data(){
 
-	install_megacli
+	megacli=/opt/MegaRAID/MegaCli/MegaCli64
 	echo "Gathering Controller & Disk data.."
 	$megacli -ShowSummary -aALL > "$HDDLOGPATH"/"$SVCTAG"_megacli_summary.txt
 	$megacli -PDList -aALL > "$HDDLOGPATH"/"$SVCTAG"_physicaldisk_list.txt
@@ -284,49 +297,13 @@ print_model_svctag() {
 
 }
 
-NFSMOUNT="172.17.1.3:/reports"
-WORKDIR="/opt/m3hran"
-MODEL=$(dmidecode -t 1 | awk '/Product Name:/ {print $4,$5}')
-SVCTAG=$(dmidecode -t 1 | awk '/Serial Number:/ {print $3}')
-GENERATION="$(dmidecode -t 1 | awk '/Product Name:/ {print substr($4,3,1)}')"
-DSULOGPATHHOST=/usr/libexec/dell_dup
-DSULOGPATHREMOTE="$WORKDIR/build/$SVCTAG"
-LOGFILE="$DSULOGPATHREMOTE/"$SVCTAG"_update_log.txt"
-IPMILOGPATH="$DSULOGPATHREMOTE/health_checks"
-IPMILOGPATH_PREBUILD="$IPMILOGPATH/pre_build"
-IPMILOGPATH_POSTBUILD="$IPMILOGPATH/post_build"
-HDDLOGPATH="$DSULOGPATHREMOTE/controller_hdd_info"
-JSONPATH="$DSULOGPATHREMOTE/json"
-JSONFILE="$JSONPATH/"$SVCTAG"_updates.json"
-
-mkdir -p $DSULOGPATHHOST 
-mkdir -p $WORKDIR > /dev/null 2>&1
-mount -t nfs -o nolock $NFSMOUNT $WORKDIR > /dev/null 2>&1
-mkdir -p $DSULOGPATHREMOTE $IPMILOGPATH $IPMILOGPATH_PREBUILD $IPMILOGPATH_POSTBUILD $JSONPATH $HDDLOGPATH> /dev/null 2>&1
-touch $LOGFILE $JSONFILE
 (
-if ! service_exists ntpd; then
-    ntp_config
-fi
-
-
 if ! [ -f $IPMILOGPATH_PREBUILD/"$SVCTAG"_1_bios_errors.txt ]; then
 
 	prebuild
 fi
 
-
-echo ""
-echo ".__                 __                              "
-echo "|__| ____   _______/  |______  _________  ___ ____  "
-echo "|  |/    \ /  ___/\   __\__  \ \____ \  \/  // __ \ "
-echo "|  |   |  \\___ \  |  |  / __ \|  |_> >    <\  ___/ "
-echo "|__|___|  /____  > |__| (____  /   __/__/\_ \\___  >"
-echo "        \/     \/            \/|__|        \/    \/ "
-
-echo ""
-echo "https://instapxe.com"
-echo ""
+cat /DISCLAIMER
 echo "Automated System Update Initializing..."
 print_model_svctag
 

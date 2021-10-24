@@ -11,8 +11,8 @@
 
 printf "\033c"
 start_time=$SECONDS
-NTPSERVER="192.168.1.5"
-NFSMOUNT="192.168.1.5:/reports"
+NTPSERVER="0.0.0.0"
+NFSMOUNT="0.0.0.0:/reports"
 WORKDIR="/opt/instapxe"
 MANUFACTURER=$(dmidecode -t 1 | awk '/Manufacturer:/ {print $2,$3}')
 MODEL=$(dmidecode -t 1 | awk '/Product Name:/ {print $4,$5}')

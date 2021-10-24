@@ -78,14 +78,16 @@ case `get_os` in
 	*)
 		echo `get_os`
 		echo "Error: unsupport OS, contact support."
+		exit 1
 	;;
 esac
 
 #set $HOST_IP envvar
 #if ! env | grep "HOST_IP" >/dev/null 2>&1; then
+        export WDS_IP
+        echo "Exported:  WDS_IP envar"
 	export HOST_IP=`get_ip`
 	echo "Generated: HOST_IP envar."
-	export WDS_IP
 #else
 #	echo "HOST_IP already set."
 #fi
@@ -107,17 +109,26 @@ if [ -f $WORKDIR/config/dsuconfig_11.xml.default ]; then
         envsubst < $WORKDIR/config/dsuconfig_11.xml.default > $WORKDIR/nfs/dsu/drm_files/dsuconfig_11.xml
         echo "Generated: dsuconfig_11.xml file."
 fi
-if [ -f $WORKDIR/src/config/helper_files/dsu_helper.sh ]; then
+if [ -f $WORKDIR/src/config/helper_files/dsu_helper.sh.default ]; then
 	insert="NFSMOUNT=\""$HOST_IP":/reports"\"
-	sed  -e "s@^NFSMOUNT=.*@$insert@"  $WORKDIR/src/config/helper_files/instapxe_agent.sh  > $WORKDIR/nfs/dsu/drm_files/apply_bundles.sh
-        echo "Generated: dsu helper file file."
+ 	insertntp="NTPSERVER=\""$HOST_IP\"
+	sed  -e "s@^NFSMOUNT=.*@$insert@" -e "s@^NTPSERVER=.*@$insertntp@"  $WORKDIR/src/config/helper_files/dsu_helper.sh.default  > $WORKDIR/nfs/dsu/drm_files/apply_bundles.sh
+        echo "Generated: dsu helper file."
+fi
+#set instapxe_agent config
+if [ -f $WORKDIR/src/config/helper_files/instapxe_agent.sh.default ]; then
+        insert="NFSMOUNT=\""$HOST_IP":/reports"\"
+	insertntp="NTPSERVER=\""$HOST_IP\"	
+	sed  -e "s@^NFSMOUNT=.*@$insert@" -e "s@^NTPSERVER=.*@$insertntp@" $WORKDIR/src/config/helper_files/instapxe_agent.sh.default  > $WORKDIR/nfs/instapxe_agent/instapxe_agent_src/instapxe_agent.sh
+        echo "Generated: instapxe_agent file."
 fi
 
 
 
 
 #set nfs module
-modprobe nfs 
-
+modprobe nfsd
+modprobe nfs
+echo "Added: nfs kernel modules."
 
 
