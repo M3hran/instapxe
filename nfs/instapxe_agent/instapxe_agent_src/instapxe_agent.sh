@@ -11,10 +11,12 @@
 
 printf "\033c"
 start_time=$SECONDS
-NTPSERVER="192.168.1.5"
-NFSMOUNT="192.168.1.5:/reports"
+MAC=$(cat /sys/class/net/*/address | head -n 1)
+NTPSERVER="172.17.1.3"
+NFSMOUNT="172.17.1.3:/reports"
 WORKDIR="/opt/instapxe"
 MANUFACTURER=$(dmidecode -t 1 | awk '/Manufacturer:/ {print $2,$3}')
+MAKE=$(echo "$MANUFACTURER" | sed -e 's:^Dell$:Dell:' -e 's:^HP$:HP:' -e 's:^VMware$:VMware:')
 MODEL=$(dmidecode -t 1 | awk '/Product Name:/ {print $4,$5}')
 SVCTAG=$(dmidecode -t 1 | awk '/Serial Number:/ {print $3}')
 GENERATION="$(dmidecode -t 1 | awk '/Product Name:/ {print substr($4,3,1)}')"
@@ -23,13 +25,14 @@ LOGFILE="$INSTAPXE_LOGPATH_REMOTE/"$SVCTAG"_hw_scan_log.txt"
 IPMILOGPATH="$INSTAPXE_LOGPATH_REMOTE/health_checks"
 #IPMILOGPATH_HWSCAN="$IPMILOGPATH/hw_scan"
 HDDLOGPATH="$INSTAPXE_LOGPATH_REMOTE/controller_drives"
+SMARTFILE="$HDDLOGPATH/"$SVCTAG"_smartlog.txt"
 JSONPATH="$INSTAPXE_LOGPATH_REMOTE/json"
 JSONFILE="$JSONPATH/"$SVCTAG"_instapxe.json"
 
 mkdir -p $WORKDIR > /dev/null 2>&1
 mount -t nfs -o nolock $NFSMOUNT $WORKDIR > /dev/null 2>&1
-mkdir -p $INSTAPXE_LOGPATH_REMOTE $IPMILOGPATH $IPMILOGPATH_HWSCAN $JSONPATH $HDDLOGPATH > /dev/null 2>&1
-touch $LOGFILE $JSONFILE
+mkdir -p $INSTAPXE_LOGPATH_REMOTE $IPMILOGPATH $JSONPATH $HDDLOGPATH $SMARTLOGPATH > /dev/null 2>&1
+touch $LOGFILE $JSONFILE $SMARTFILE
 
 
 timestamp() {
@@ -48,21 +51,21 @@ print_json () {
 
 	if [[ "$1" =~ ^(STARTED)$ ]]; then
 
-                JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"$MANUFACTURER\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"hw_scan\",\"msg\":\"started hardware scan.\"}"
+                JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"$MANUFACTURER\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"mac\":\"$MAC\",\"level\":\"info\",\"stage\":\"hw_scan\",\"msg\":\"started hardware scan.\"}"
 
 	elif [[ "$1" =~ ^(REBOOT)$ ]]; then
 
-               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"$MANUFACTURER\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"hw_scan\",\"msg\":\"rebooting to apply updates\"}"
+               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"$MANUFACTURER\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"mac\":\"$MAC\",\"level\":\"info\",\"stage\":\"hw_scan\",\"msg\":\"rebooting to apply updates\"}"
 
         elif [[ "$1" =~ ^(COMPLETED)$ ]]; then
 		elapsed=$(( SECONDS - start_time  ))
 		atime="$(eval "echo $(date -ud "@$elapsed" +'$((%s/3600/24 )) days %H hr %M min %S sec')")"
 
-		JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"$MANUFACTURER\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"hw_scan\",\"msg\":\"completed hardware scan\",\"elapsed\":\"$atime\"}"
+		JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"$MANUFACTURER\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"mac\":\"$MAC\",\"level\":\"info\",\"stage\":\"hw_scan\",\"msg\":\"completed hardware scan\",\"elapsed\":\"$atime\"}"
 
 	elif [[ "$1" =~ ^(EXITED)$ ]]; then
 
-               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"$MANUFACTURER\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"error\",\"stage\":\"hw_scan\",\"msg\":\"exited hardware scan with error\"}"
+               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"$MANUFACTURER\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"mac\":\"$MAC\",\"level\":\"error\",\"stage\":\"hw_scan\",\"msg\":\"exited hardware scan with error\"}"
 	       
         fi
 
@@ -160,9 +163,9 @@ gather_sensor_data() {
 
 }
 
-gather_hdd_data(){
+gather_mega_data(){
 	megacli=/opt/MegaRAID/MegaCli/MegaCli64
-        echo "Gathering Controller & Disk data.."
+        echo "Gathering MegaRAID Controller & Disk data.."
         $megacli -ShowSummary -aALL > "$HDDLOGPATH"/"$SVCTAG"_megacli_summary.txt
         $megacli -PDList -aALL > "$HDDLOGPATH"/"$SVCTAG"_physicaldisk_list.txt
         $megacli -LDPDInfo -aALL > "$HDDLOGPATH"/"$SVCTAG"_physicaldisk_details.txt
@@ -172,6 +175,75 @@ gather_hdd_data(){
         $megacli -CfgDsply -aALL > "$HDDLOGPATH"/"$SVCTAG"_controller_config_info.txt
         $megacli -AdpBbuCmd -aALL > "$HDDLOGPATH"/"$SVCTAG"_bbu_info.txt
         $megacli -AdpPR -Info -aALL > "$HDDLOGPATH"/"$SVCTAG"_patrolread_state.txt
+
+}
+gather_smart_data() {
+
+	declare -A address
+	CARG=""
+	EXITCODE=0
+	echo "Gathering S.M.A.R.T. Disk data..."
+	cat /DISCLAIMER >> "$HDDLOGPATH"/"$SVCTAG"_SMART_health_status.txt
+        cat /DISCLAIMER >> $SMARTFILE 
+	#cat /DISCLAIMER >> "$HDDLOGPATH"/"$SVCTAG"_SMART_health_status.txt
+	#get raid contoller info
+	lspci | egrep -i 'raid' >> $SMARTFILE
+        cat /proc/scsi/scsi >> $SMARTFILE
+	#get disks devices
+	smartctl --scan | awk '{print $3}' >> $SMARTFILE
+	ls -la /dev/sg* | awk '{print $10}' >> $SMARTFILE
+
+
+	i=0
+	j=0
+	
+	IFS=$'\n' read -d '' -r -a lines < $SMARTFILE 
+
+	#gather SMART disk data for all drives
+	for k in "${lines[@]}"
+	do
+		
+		if [[ $k =~ /dev/sd* || $k =~ /dev/hd* || $k =~ /dev/sg* || $k =~ megaraid* ]]; then
+
+			EXITCODE=0
+			case $MAKE in
+
+        			*"Dell"*)
+					if [[ $k =~ megaraid* ]]; then
+						cat /DISCLAIMER >> "$HDDLOGPATH"/"$SVCTAG"_drive_"$j".txt	
+						smartctl -a -d "$k" /dev/sg0 >> "$HDDLOGPATH"/"$SVCTAG"_drive_"$j".txt
+						
+						#get health status 
+						echo -e "\nDisk $j" >> "$HDDLOGPATH"/"$SVCTAG"_SMART_health_status.txt
+                				smartctl -a -d $k /dev/sg0 | grep 'Serial number\|User Capacity\|SMART Health Status\|Non-medium error count' >>  "$HDDLOGPATH"/"$SVCTAG"_SMART_health_status.txt
+					fi
+                			;;
+        			*"HP"*)
+					
+					CARG="cciss"
+					cat /DISCLAIMER >> "$HDDLOGPATH"/"$SVCTAG"_drive_"$j".txt
+					smartctl -a -d "$CARG","$j" "$k" >> "$HDDLOGPATH"/"$SVCTAG"_drive_"$j".txt
+
+					#get health status
+                                        echo -e "\nDisk $j" >> "$HDDLOGPATH"/"$SVCTAG"_SMART_health_status.txt
+                                        smartctl -a -d "$CARG","$j" "$k" | grep 'Serial Number\|User Capacity\|SMART overall-health\|Power_On_Hours\|Media_Wearout_Indicator' >>  "$HDDLOGPATH"/"$SVCTAG"_SMART_health_status.txt
+                			;;
+
+        			*)
+
+                			echo "$MAKE"
+                			EXITCODE=1
+                			;;
+			esac
+
+			j=$(($j + 1))
+		fi
+	done
+
+	
+    		
+
+
 
 }
 
@@ -229,20 +301,19 @@ print_sysinfo
 
 #gather dmidecode data
 gather_dmidecode
-#gather megacli data
-gather_hdd_data
+#gather smart data
+gather_smart_data
 #gather IPMI data
 gather_sensor_data hw_scan
-#gather smart data
-#
 
 
-MAKE=$(echo "$MANUFACTURER" | sed -e 's:^Dell$:Dell:' -e 's:^HP$:HP:' -e 's:^VMware$:VMware:')
 EXITCODE=0
 case $MAKE in
 
 	*"Dell"*)
 		echo "$MAKE"	
+		#gather megacli data
+		gather_mega_data
 
 		;;
 	*"HP"*)

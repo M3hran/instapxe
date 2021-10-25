@@ -1,3 +1,4 @@
+web/website/__pycache__/
 boot/
 http/instapxe_agent/squashfs.img
 http/dsu/LiveOS/squashfs.img

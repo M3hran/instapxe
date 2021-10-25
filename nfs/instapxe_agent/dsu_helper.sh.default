@@ -10,8 +10,8 @@
 
 printf "\033c"
 start_time=$SECONDS
-NTPSERVER="172.17.1.3"
-NFSMOUNT="172.17.1.3:/reports"
+NTPSERVER="0.0.0.0"
+NFSMOUNT="0.0.0.0:/reports"
 WORKDIR="/opt/m3hran"
 MODEL=$(dmidecode -t 1 | awk '/Product Name:/ {print $4,$5}')
 SVCTAG=$(dmidecode -t 1 | awk '/Serial Number:/ {print $3}')
