@@ -3,5 +3,3 @@
 /sum_gen8        $HOST_NETWORK(ro,sync,no_subtree_check,no_root_squash)
 /sum_latest      $HOST_NETWORK(ro,sync,no_subtree_check,no_root_squash)
 /instapxe_agent  $HOST_NETWORK(ro,sync,no_subtree_check,no_root_squash)
-/instapxe_boot   $HOST_NETWORK(ro,sync,no_subtree_check,no_root_squash)
-

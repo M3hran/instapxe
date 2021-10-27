@@ -2,27 +2,25 @@
 version: "3.7"
 
 services:
-  instapxe:
+  instapxe-tftp:
     image: instapxe/instapxe
-    container_name: instapxe
+    container_name: instapxe-tftp
     restart: always
-    environment:
-      - HTTP_HOST=$HOST_IP
-      - NFS_HOST=$HOST_IP
-      - WDS_HOST=$WDS_IP
+    env_file:
+      - production.env
     ports:
       - 69:69/udp
     volumes:
-      - ./boot:/instapxe/boot
-      - ./src/config/menufiles/instapxe.menu:/instapxe/instapxe.menu
-      - ./src/config/menufiles/instapxe.menu64:/instapxe/instapxe.menu64
+      - ./tftp:/instapxe/boot
+      - ./2_config/menufiles/instapxe.menu:/instapxe/instapxe.menu
+      - ./2_config/menufiles/instapxe.menu64:/instapxe/instapxe.menu64
   instapxe-http:
     image: nginx:alpine
     container_name: instapxe-http
     ports:
       - 80:80
     volumes:
-      - ./config/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./2_config/nginx.cfg/nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./http:/usr/share/nginx/html
       - ./nfs/reports:/usr/share/nginx/html/reports
   instapxe-nfs:
@@ -39,36 +37,29 @@ services:
       - 32767:32767
       - 32767:32767/udp
     volumes:
-      - ./config/exports:/etc/exports
+      - ./nfs/exports:/etc/exports
       - ./nfs/dsu:/dsu
       - ./nfs/sum_gen8:/sum_gen8
       - ./nfs/sum_latest:/sum_latest
       - ./nfs/reports:/reports
       - ./nfs/instapxe_agent:/instapxe_agent 
-      - ./nfs/instapxe_agent/instapxe_boot:/instapxe_boot 
   instapxe-db:
     image: mysql
     container_name: instapxe-db
     restart: always
-    environment:
-      - MYSQL_USER=instapxe
-      - MYSQL_PASSWORD=instapxe
-      - MYSQL_ROOT_PASSWORD=instapxe
-      - MYSQL_DATABASE=instapxe
+    env_file:
+      - production.env
     ports:
       - 3306:3306
     volumes:
-      - ./data/instapxe_db:/var/lib/mysql
-  instapxe-app:
-    build: ./web
-    container_name: instapxe-app
+      - ./db/instapxe_db:/var/lib/mysql
+  instapxe-backend:
+    build: ./1_src/web/backend
+    container_name: instapxe-backend
     restart: always
-    environment:
-      - MYSQL_USER=instapxe
-      - MYSQL_PASSWORD=instapxe
-      - MYSQL_DATABASE=instapxe
-      - MYSQL_HOST=instapxe-db
+    env_file:
+      - production.env
     ports:
       - 5000:5000
     volumes:
-      - ./web:/instapxe-app
+      - ./1_src/web/backend:/instapxe-app

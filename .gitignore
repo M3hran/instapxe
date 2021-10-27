@@ -1,5 +1,5 @@
 web/website/__pycache__/
-boot/
+tftp/
 http/instapxe_agent/squashfs.img
 http/dsu/LiveOS/squashfs.img
 http/DUP_REPO/
@@ -7,5 +7,7 @@ http/reports/
 nfs/reports/
 nfs/sum_gen8/
 nfs/sum_latest/
+nfs/exports
 EFK/data/
-data/
+db/
+production.env

@@ -462,13 +462,32 @@ case $EXITCODE in
 #
 #                                ;;
 #		esac
-		postbuild
-		print_sysinfo
-		echo "Updates completed at: " `timestamp` && print_json "COMPLETED" 
-		elapsed_time	
+
+
 		echo "" 
 		echo ""
-		shutdowng
+		if [[ $(tail -n 30 $LOGFILE | grep "Please restart the system") ]]; then
+		       	
+	                print_sysinfo
+	                echo "Rebooting to apply updates at: " `timestamp` && print_json "REBOOT"
+        	        elapsed_time
+                	echo ""
+                	echo "REBOOTING & APPLYING UPDATES..."
+                	sleep 3
+                	shutdown -r now
+
+	        else	       
+	
+                	postbuild
+                	print_sysinfo
+                	elapsed_time
+                	echo ""
+                	echo "Update completed at: " `timestamp` && print_json "COMPLETED"
+                	echo "DONE. NO MORE APPLICABLE UPDATES."
+                	echo ""
+                	shutdowng
+
+		fi
 		;;
 esac
 

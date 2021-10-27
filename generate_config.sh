@@ -1,18 +1,33 @@
-#1/bin/bash
+#!/bin/bash
+####################################################################
+#
+# 2021 instapxe (c) copyright
+# https://instapxe.com/eula
+# generate_config.sh
+# maintained by: m3hran
+#
+####################################################################
+
+
 
 WDS_IP=172.17.1.100
+WORKDIR=$(pwd)
+CONFIGDIR="$WORKDIR/2_config"
+ENVFILE="$CONFIGDIR/default.env"
+PENVFILE="$WORKDIR/production.env"
 
+#generates timestamps for logging
 timestamp() {
   date +"%m/%d/%Y-%H:%M:%S" # current time
 }
 
-
+#detect os to install correct packages
 get_os() {
 	cat /etc/os-release | grep "^NAME" | cut -d "=" -f 2
 }
 
-WORKDIR=$(pwd)
 
+#detect if package/service exists based on os
 service_exists() {
 	
 	local n=$1
@@ -46,16 +61,16 @@ service_exists() {
 	esac
 }
 
-
+#get IP address
 get_ip() {
 	hostname -I | awk '{print $1}'
 }
+#get NT address
 get_network(){
 	myip=`get_ip`
 	
 	ip addr show | grep "inet `get_ip`" | awk '{print $2}'
 }
-
 
 
 #install envsubst
@@ -82,48 +97,68 @@ case `get_os` in
 	;;
 esac
 
-#set $HOST_IP envvar
+#set variable in env_file
 #if ! env | grep "HOST_IP" >/dev/null 2>&1; then
         export WDS_IP
         echo "Exported:  WDS_IP envar"
 	export HOST_IP=`get_ip`
 	echo "Generated: HOST_IP envar."
+	export HOST_NETWORK=`get_network`
+      
+	envsubst < $ENVFILE > $PENVFILE
+
 #else
 #	echo "HOST_IP already set."
 #fi
 
 
 #set nfs exports
-if [ -f $WORKDIR/config/exports.default ]; then
-	export HOST_NETWORK=`get_network`
-	envsubst < $WORKDIR/config/exports.default > $WORKDIR/config/exports
+if [ -f $CONFIGDIR/nfs.cfg/exports.default ]; then
+	envsubst < $CONFIGDIR/nfs.cfg/exports.default > $WORKDIR/nfs/exports
 	echo "Generated: NFS exports file."
+else
+	echo "Error: NFS config not found"
 fi
+
 
 #set dsu http config
-if [ -f $WORKDIR/config/dsuconfig.xml.default ]; then
-        envsubst < $WORKDIR/config/dsuconfig.xml.default > $WORKDIR/nfs/dsu/drm_files/dsuconfig.xml
+if [ -f $CONFIGDIR/dsu.cfg/dsuconfig.xml.default ]; then
+        envsubst < $CONFIGDIR/dsu.cfg/dsuconfig.xml.default > $WORKDIR/nfs/dsu/drm_files/dsuconfig.xml
         echo "Generated: dsuconfig.xml file."
+else
+        echo "Error: DSU config not found"
+
 fi
-if [ -f $WORKDIR/config/dsuconfig_11.xml.default ]; then
-        envsubst < $WORKDIR/config/dsuconfig_11.xml.default > $WORKDIR/nfs/dsu/drm_files/dsuconfig_11.xml
+
+#set dsu_11 config
+if [ -f $CONFIGDIR/dsu.cfg/dsuconfig_11.xml.default ]; then
+        envsubst < $CONFIGDIR/dsu.cfg/dsuconfig_11.xml.default > $WORKDIR/nfs/dsu/drm_files/dsuconfig_11.xml
         echo "Generated: dsuconfig_11.xml file."
+else
+        echo "Error: DSU_11 config not found"
+
+
 fi
-if [ -f $WORKDIR/src/config/helper_files/dsu_helper.sh.default ]; then
+
+#set dsu_helper script
+if [ -f $CONFIGDIR/dsu.cfg/dsu_helper.sh.default ]; then
 	insert="NFSMOUNT=\""$HOST_IP":/reports"\"
  	insertntp="NTPSERVER=\""$HOST_IP\"
-	sed  -e "s@^NFSMOUNT=.*@$insert@" -e "s@^NTPSERVER=.*@$insertntp@"  $WORKDIR/src/config/helper_files/dsu_helper.sh.default  > $WORKDIR/nfs/dsu/drm_files/apply_bundles.sh
-        echo "Generated: dsu helper file."
+	sed  -e "s@^NFSMOUNT=.*@$insert@" -e "s@^NTPSERVER=.*@$insertntp@"  $CONFIGDIR/dsu.cfg/dsu_helper.sh.default  > $WORKDIR/nfs/dsu/drm_files/apply_bundles.sh
+        echo "Generated: dsu helper script."
+else
+        echo "Error: DSU helper script not found"
 fi
 #set instapxe_agent config
-if [ -f $WORKDIR/src/config/helper_files/instapxe_agent.sh.default ]; then
+if [ -f $CONFIGDIR/instapxe_agent.cfg/instapxe_agent.sh.default ]; then
         insert="NFSMOUNT=\""$HOST_IP":/reports"\"
 	insertntp="NTPSERVER=\""$HOST_IP\"	
-	sed  -e "s@^NFSMOUNT=.*@$insert@" -e "s@^NTPSERVER=.*@$insertntp@" $WORKDIR/src/config/helper_files/instapxe_agent.sh.default  > $WORKDIR/nfs/instapxe_agent/instapxe_agent_src/instapxe_agent.sh
+	sed  -e "s@^NFSMOUNT=.*@$insert@" -e "s@^NTPSERVER=.*@$insertntp@" $CONFIGDIR/instapxe_agent.cfg/instapxe_agent.sh.default  > $WORKDIR/nfs/instapxe_agent/instapxe_agent_src/instapxe_agent.sh
         echo "Generated: instapxe_agent file."
+else
+        echo "Error: instaPXE agent script not found"
+
 fi
-
-
 
 
 #set nfs module

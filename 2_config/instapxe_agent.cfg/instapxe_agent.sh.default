@@ -272,7 +272,7 @@ change_bios_mode(){
 
 shutdowng() {
 
-       change_bios_mode Uefi
+       #change_bios_mode Uefi
        echo "system shutting down!"
        sleep 5
        shutdown -h now
