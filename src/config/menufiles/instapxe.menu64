@@ -29,8 +29,8 @@ LABEL SUMLATEST
 
 LABEL WDS
     MENU LABEL ^4) Windows Deployment Services (WDS)
-    COM32 pxechn.c32
-    append $WDS_HOST::Boot\x64\wdsnbp.com -W
+    kernel pxechn.c32
+    append $WDS_HOST::Boot\x64\bootmgfw.efi 
 
 
 
@@ -93,3 +93,12 @@ MENU LABEL ^8) BootLocal
         TEXT HELP
         Boot to local hard disk.
         ENDTEXT
+
+LABEL reboot
+MENU LABEL ^9)Reboot
+	COM32 reboot.c32
+
+LABEL poweroff
+MENU LABEL ^-)Power Off
+	COM32 poweroff.c32
+

@@ -1,6 +1,6 @@
 DEFAULT vesamenu.c32
 TIMEOUT 50 #100= 10 seconds
-ONTIMEOUT DSU
+ONTIMEOUT INSTAPXE
 
 LABEL INSTAPXE
 	MENU LABEL ^0) instaPXE Agent
@@ -88,3 +88,11 @@ MENU LABEL ^8) BootLocal
         TEXT HELP
         Boot to local hard disk.
         ENDTEXT
+
+LABEL reboot
+	MENU LABEL Reboot
+	COM32 reboot.c32
+
+LABEL poweroff
+	MENU LABEL Power Off
+	COM32 poweroff.c32

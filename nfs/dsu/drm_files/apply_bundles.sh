@@ -10,9 +10,12 @@
 
 printf "\033c"
 start_time=$SECONDS
+MAC=$(cat /sys/class/net/*/address | head -n 1)
 NTPSERVER="172.17.1.3"
 NFSMOUNT="172.17.1.3:/reports"
 WORKDIR="/opt/m3hran"
+MANUFACTURER=$(dmidecode -t 1 | awk '/Manufacturer:/ {print $2,$3}')
+MAKE=$(echo "$MANUFACTURER" | sed -e 's:^Dell$:Dell:' -e 's:^HP$:HP:' -e 's:^VMware$:VMware:')
 MODEL=$(dmidecode -t 1 | awk '/Product Name:/ {print $4,$5}')
 SVCTAG=$(dmidecode -t 1 | awk '/Serial Number:/ {print $3}')
 GENERATION="$(dmidecode -t 1 | awk '/Product Name:/ {print substr($4,3,1)}')"
@@ -25,6 +28,8 @@ IPMILOGPATH_POSTBUILD="$IPMILOGPATH/post_build"
 HDDLOGPATH="$DSULOGPATHREMOTE/controller_hdd_info"
 JSONPATH="$DSULOGPATHREMOTE/json"
 JSONFILE="$JSONPATH/"$SVCTAG"_updates.json"
+megacli=/opt/MegaRAID/MegaCli/MegaCli64
+racadm=/opt/dell/srvadmin/sbin/racadm
 
 #ntpdate -u $NTPSERVER
 mkdir -p $DSULOGPATHHOST
@@ -41,11 +46,14 @@ print_json () {
 
 	if [[ "$1" =~ ^(STARTED)$ ]]; then
 
-                JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"Update\",\"msg\":\"started update\"}"
+                JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"mac\":\"$MAC\",\"location\":\"$LOCATION\",\"level\":\"info\",\"stage\":\"Update\",\"msg\":\"started update\"}"
 
 	elif [[ "$1" =~ ^(REBOOT)$ ]]; then
 
-               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"Update\",\"msg\":\"rebooting to apply updates\"}"
+		elapsed=$(( SECONDS - start_time  ))
+                atime="$(eval "echo $(date -ud "@$elapsed" +'$((%s/3600/24 )) days %H hr %M min %S sec')")"
+
+               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"mac\":\"$MAC\",\"location\":\"$LOCATION\",\"level\":\"info\",\"stage\":\"Update\",\"msg\":\"rebooting to apply updates\",\"elapsed\":\"$atime\"}"
 
         elif [[ "$1" =~ ^(COMPLETED)$ ]]; then
 
@@ -54,11 +62,11 @@ print_json () {
 
 
 
- 	       JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"info\",\"stage\":\"Update\",\"msg\":\"completed updates\",\"elapsed\":\"$atime\"}"
+ 	       JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"mac\":\"$MAC\",\"location\":\"$LOCATION\",\"level\":\"info\",\"stage\":\"Update\",\"msg\":\"completed updates\",\"elapsed\":\"$atime\"}"
 
 	elif [[ "$1" =~ ^(EXITED)$ ]]; then
 
-               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"level\":\"error\",\"stage\":\"Update\",\"msg\":\"exited dsu with error\"}"
+               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"mac\":\"$MAC\",\"location\":\"$LOCATION\",\"level\":\"error\",\"stage\":\"Update\",\"msg\":\"exited dsu with error\"}"
 	       
         fi
 
@@ -279,21 +287,42 @@ postbuild() {
 	gather_hdd_data
 	
 }
+change_bios_mode(){
+	local mode=$1
+	echo "Setting Boot mode to..$mode"
+	$racadm set bios.BiosBootSettings.BootMode $mode
+	$racadm jobqueue create BIOS.Setup.1-1
+
+}
 shutdowng() {
 
        finalize_reports
+       change_bios_mode Uefi
        echo "shutting down!"
        sleep 5
        shutdown -h now
 
 }
+get_cluster_location() {
 
-print_model_svctag() {
-	
-	echo ""
-	echo "Model:   " $MODEL
-	echo "SVC TAG: " $SVCTAG
-	echo ""
+        interface=$( ifconfig | head -n1 | cut -d ":" -f 1)
+        value=$( tcpdump -q -nn -v -i $interface -s 500 -c 1 'ether[20:2]==0x2000' 2> /dev/null |  grep -i "Device-ID\|Port-ID" | cut -d "'" -f 2,4 )
+        RACK=$( echo $value | cut -c 2)
+        RU=$( echo $value | awk -F '/' '{print $2}' )
+        LOCATION="Rack$RACK-U$RU"
+}
+
+
+print_sysinfo() {
+
+        echo ""
+        echo "    Manufacturer:                 $MANUFACTURER"
+        echo "    System Model:                 $MODEL"
+        echo "    SVCTAG/Serial:                $SVCTAG"
+        echo "    Cluster Location:             $LOCATION"
+        echo ""
+
+
 
 }
 
@@ -305,7 +334,8 @@ fi
 
 cat /DISCLAIMER
 echo "Automated System Update Initializing..."
-print_model_svctag
+get_cluster_location
+print_sysinfo
 
 shopt -s expand_aliases > /dev/null 2>&1
 alias 'rpm=rpm --ignoresize' > /dev/null 2>&1
@@ -389,7 +419,7 @@ case $EXITCODE in
 #		esac
 
 		postbuild
-		print_model_svctag
+		print_sysinfo
 		elapsed_time
 		echo ""
 		echo "Update completed at: " `timestamp` && print_json "COMPLETED"
@@ -402,17 +432,17 @@ case $EXITCODE in
 	8 | 24 | 25 | 26 )
 
 
-		print_model_svctag
+		print_sysinfo
 		echo "Rebooting to apply updates at: " `timestamp` && print_json "REBOOT"
 		elapsed_time
 		echo ""
 		echo "REBOOTING & APPLYING UPDATES..."
 		sleep 3
-		reboot
+		shutdown -r now
 		;;	
 
 	1)
-		print_model_svctag
+		print_sysinfo
 		echo "Updates exited at: " `timestamp` && print_json "EXITED"
 		elapsed_time
 		echo ""
@@ -433,12 +463,12 @@ case $EXITCODE in
 #                                ;;
 #		esac
 		postbuild
-		print_model_svctag
+		print_sysinfo
 		echo "Updates completed at: " `timestamp` && print_json "COMPLETED" 
 		elapsed_time	
 		echo "" 
 		echo ""
-		#shutdowng
+		shutdowng
 		;;
 esac
 

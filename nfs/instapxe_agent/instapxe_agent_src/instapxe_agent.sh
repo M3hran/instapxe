@@ -20,14 +20,15 @@ MAKE=$(echo "$MANUFACTURER" | sed -e 's:^Dell$:Dell:' -e 's:^HP$:HP:' -e 's:^VMw
 MODEL=$(dmidecode -t 1 | awk '/Product Name:/ {print $4,$5}')
 SVCTAG=$(dmidecode -t 1 | awk '/Serial Number:/ {print $3}')
 GENERATION="$(dmidecode -t 1 | awk '/Product Name:/ {print substr($4,3,1)}')"
-INSTAPXE_LOGPATH_REMOTE="$WORKDIR/hw_scan/$SVCTAG"
+INSTAPXE_LOGPATH_REMOTE="$WORKDIR/build/$SVCTAG"
 LOGFILE="$INSTAPXE_LOGPATH_REMOTE/"$SVCTAG"_hw_scan_log.txt"
 IPMILOGPATH="$INSTAPXE_LOGPATH_REMOTE/health_checks"
 #IPMILOGPATH_HWSCAN="$IPMILOGPATH/hw_scan"
 HDDLOGPATH="$INSTAPXE_LOGPATH_REMOTE/controller_drives"
 SMARTFILE="$HDDLOGPATH/"$SVCTAG"_smartlog.txt"
 JSONPATH="$INSTAPXE_LOGPATH_REMOTE/json"
-JSONFILE="$JSONPATH/"$SVCTAG"_instapxe.json"
+JSONFILE="$JSONPATH/"$SVCTAG"_updates.json"
+LOCATION=""
 
 mkdir -p $WORKDIR > /dev/null 2>&1
 mount -t nfs -o nolock $NFSMOUNT $WORKDIR > /dev/null 2>&1
@@ -51,21 +52,21 @@ print_json () {
 
 	if [[ "$1" =~ ^(STARTED)$ ]]; then
 
-                JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"$MANUFACTURER\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"mac\":\"$MAC\",\"level\":\"info\",\"stage\":\"hw_scan\",\"msg\":\"started hardware scan.\"}"
+                JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"$MANUFACTURER\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"mac\":\"$MAC\",\"location\":\"$LOCATION\",\"level\":\"info\",\"stage\":\"hw_scan\",\"msg\":\"started hardware scan.\"}"
 
 	elif [[ "$1" =~ ^(REBOOT)$ ]]; then
 
-               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"$MANUFACTURER\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"mac\":\"$MAC\",\"level\":\"info\",\"stage\":\"hw_scan\",\"msg\":\"rebooting to apply updates\"}"
+               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"$MANUFACTURER\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"mac\":\"$MAC\",\"location\":\"$LOCATION\",\"level\":\"info\",\"stage\":\"hw_scan\",\"msg\":\"rebooting to apply updates\"}"
 
         elif [[ "$1" =~ ^(COMPLETED)$ ]]; then
 		elapsed=$(( SECONDS - start_time  ))
 		atime="$(eval "echo $(date -ud "@$elapsed" +'$((%s/3600/24 )) days %H hr %M min %S sec')")"
 
-		JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"$MANUFACTURER\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"mac\":\"$MAC\",\"level\":\"info\",\"stage\":\"hw_scan\",\"msg\":\"completed hardware scan\",\"elapsed\":\"$atime\"}"
+		JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"$MANUFACTURER\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"mac\":\"$MAC\",\"location\":\"$LOCATION\",\"level\":\"info\",\"stage\":\"hw_scan\",\"msg\":\"completed hardware scan\",\"elapsed\":\"$atime\"}"
 
 	elif [[ "$1" =~ ^(EXITED)$ ]]; then
 
-               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"$MANUFACTURER\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"mac\":\"$MAC\",\"level\":\"error\",\"stage\":\"hw_scan\",\"msg\":\"exited hardware scan with error\"}"
+               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"$MANUFACTURER\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"mac\":\"$MAC\",\"location\":\"$LOCATION\",\"level\":\"error\",\"stage\":\"hw_scan\",\"msg\":\"exited hardware scan with error\"}"
 	       
         fi
 
@@ -215,7 +216,7 @@ gather_smart_data() {
 						
 						#get health status 
 						echo -e "\nDisk $j" >> "$HDDLOGPATH"/"$SVCTAG"_SMART_health_status.txt
-                				smartctl -a -d $k /dev/sg0 | grep 'Serial number\|User Capacity\|SMART Health Status\|Non-medium error count' >>  "$HDDLOGPATH"/"$SVCTAG"_SMART_health_status.txt
+                				smartctl -a -d $k /dev/sg0 | grep 'Serial number\|User Capacity\|SMART Health Status\|Non-medium error count\|Serial Number\|SMART overall-health\|Power_On_Hours\|Media_Wearout_Indicator' >>  "$HDDLOGPATH"/"$SVCTAG"_SMART_health_status.txt
 					fi
                 			;;
         			*"HP"*)
@@ -226,7 +227,7 @@ gather_smart_data() {
 
 					#get health status
                                         echo -e "\nDisk $j" >> "$HDDLOGPATH"/"$SVCTAG"_SMART_health_status.txt
-                                        smartctl -a -d "$CARG","$j" "$k" | grep 'Serial Number\|User Capacity\|SMART overall-health\|Power_On_Hours\|Media_Wearout_Indicator' >>  "$HDDLOGPATH"/"$SVCTAG"_SMART_health_status.txt
+                                        smartctl -a -d "$CARG","$j" "$k" | grep 'Serial number\|User Capacity\|SMART Health Status\|Non-medium error count\|Serial Number\|SMART overall-health\|Power_On_Hours\|Media_Wearout_Indicator'  >>  "$HDDLOGPATH"/"$SVCTAG"_SMART_health_status.txt
                 			;;
 
         			*)
@@ -246,13 +247,32 @@ gather_smart_data() {
 
 
 }
+get_cluster_location() {
+
+	interface=$( ifconfig | head -n1 | cut -d ":" -f 1)
+	value=$( tcpdump -q -nn -v -i $interface -s 500 -c 1 'ether[20:2]==0x2000' 2> /dev/null |  grep -i "Device-ID\|Port-ID" | cut -d "'" -f 2,4 )
+	RACK=$( echo $value | cut -c 2)
+	RU=$( echo $value |  awk -F '/' '{print $2}' )
+	LOCATION="Rack$RACK-U$RU"
+}
 
 clear_eventlogs(){
 	ipmitool sel clear 
 }
 
+change_bios_mode(){
+        local mode=$1
+	string="jobqueue create BIOS.Setup.1-1"
+        echo "Setting Boot mode to..$mode"
+        $racadm set bios.BiosBootSettings.BootMode $mode
+        $racadm $string
+
+}
+
+
 shutdowng() {
 
+       change_bios_mode Uefi
        echo "system shutting down!"
        sleep 5
        shutdown -h now
@@ -279,6 +299,7 @@ print_sysinfo() {
 	echo "    Manufacturer: 		$MANUFACTURER"
 	echo "    System Model: 		$MODEL"
 	echo "    SVCTAG/Serial: 		$SVCTAG"
+	echo "    Cluster Location: 		$LOCATION"
 	echo ""
 
 }
@@ -297,6 +318,7 @@ cat /DISCLAIMER
 echo "Automated System Hardware Scan Initializing.."
 echo "Scan started at: " `timestamp` && print_json "STARTED"
 
+get_cluster_location
 print_sysinfo
 
 #gather dmidecode data
@@ -311,7 +333,6 @@ EXITCODE=0
 case $MAKE in
 
 	*"Dell"*)
-		echo "$MAKE"	
 		#gather megacli data
 		gather_mega_data
 
@@ -350,7 +371,7 @@ case $EXITCODE in
 		print_reports_location
 		echo "" 
 		echo ""
-		#restartg
+		shutdowng
 		;;
 esac
 
