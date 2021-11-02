@@ -1,14 +1,21 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-
+import os
 
 db = SQLAlchemy()
-DB_HOST = '192.168.1.220'
-DB_PORT = '3306'
-DB_USERNAME = 'instapxe'
-DB_PASSWORD = 'instapxe'
-DB_NAME = 'instapxe'
+
+DB_HOST = os.environ.get('MYSQL_HOST')
+DB_PORT = os.environ.get('MYSQL_PORT')
+DB_USERNAME = os.environ.get('MYSQL_USER')
+DB_PASSWORD = os.environ.get('MYSQL_PASSWORD')
+DB_NAME = os.environ.get('MYSQL_DATABASE')
+
+#DB_HOST = '192.168.1.220'
+#DB_PORT = '3306'
+#DB_USERNAME = 'instapxe'
+#DB_PASSWORD = 'instapxe'
+#DB_NAME = 'instapxe'
 
 
 def create_app():
