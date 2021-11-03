@@ -371,7 +371,7 @@ case $EXITCODE in
 		print_reports_location
 		echo "" 
 		echo ""
-		shutdowng
+		#shutdowng
 		;;
 esac
 

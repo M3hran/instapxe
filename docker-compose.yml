@@ -77,6 +77,9 @@ services:
       - ./1_src/web/backend:/instapxe-app
     networks:
       - instapxe_net
+    depends_on:
+      - instapxe-db
+
 
 networks:
   instapxe_net:
