@@ -9,5 +9,5 @@ nfs/sum_gen8/
 nfs/sum_latest/
 nfs/exports
 EFK/data/
-db/
+data/
 production.env

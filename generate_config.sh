@@ -99,8 +99,8 @@ esac
 
 #set variable in env_file
 #if ! env | grep "HOST_IP" >/dev/null 2>&1; then
-        export WDS_IP
-        echo "Exported:  WDS_IP envar"
+    export WDS_IP
+    echo "Exported:  WDS_IP envar"
 	export HOST_IP=`get_ip`
 	echo "Generated: HOST_IP envar."
 	export HOST_NETWORK=`get_network`
