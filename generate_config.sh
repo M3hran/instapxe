@@ -99,8 +99,8 @@ esac
 
 #set variable in env_file
 #if ! env | grep "HOST_IP" >/dev/null 2>&1; then
-    export WDS_IP
-    echo "Exported:  WDS_IP envar"
+ 	export WDS_IP
+ 	echo "Exported:  WDS_IP envar"
 	export HOST_IP=`get_ip`
 	echo "Generated: HOST_IP envar."
 	export HOST_NETWORK=`get_network`
@@ -161,6 +161,7 @@ else
 
 fi
 
+export $(cat $PENVFILE | xargs)
 INSTALLDIR="./2_config/instapxe.conf"
 PATHS="$INSTALLDIR/bios $INSTALLDIR/efi32 $INSTALLDIR/efi64"
 for i in $PATHS
@@ -180,7 +181,7 @@ do
 	if [[ $i == $INSTALLDIR/efi32 ]]; then
 			
 			#ln -s $i/pxelinux.cfg /instapxe.conf/uefi32
-		envsubst < ./2_config/menufiles/instapxe.menu32 > $i/pxelinux.cfg/default
+		envsubst < ./2_config/menufiles/instapxe.menu64 > $i/pxelinux.cfg/default
 		echo "UEFI32 menus created."
 
 	fi
@@ -191,8 +192,16 @@ do
 		echo "UEFI64 menus created."
 
 	fi
+
+	if ! [ $(head -5 $i/pxelinux.cfg/default | grep -qxF 'MENU INCLUDE pxelinux.cfg/instapxe.conf)') ]; then
+                cp $i/pxelinux.cfg/default /tmp/tmpdefault
+                sed -i '/.*menu.c32.*/a MENU INCLUDE pxelinux.cfg\/instapxe.conf' /tmp/tmpdefault
+                cp /tmp/tmpdefault $i/pxelinux.cfg/default
+                rm /tmp/tmpdefault
+        fi
         
 done
+
 
 #set nfs module
 modprobe nfsd

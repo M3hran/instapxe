@@ -29,6 +29,8 @@ SMARTFILE="$HDDLOGPATH/"$SVCTAG"_smartlog.txt"
 JSONPATH="$INSTAPXE_LOGPATH_REMOTE/json"
 JSONFILE="$JSONPATH/"$SVCTAG"_updates.json"
 LOCATION=""
+API="http://172.17.1.3:9010/api/device/"
+H='-H "Content-Type: application/json" -H "Accept: application/json"'
 
 mkdir -p $WORKDIR > /dev/null 2>&1
 mount -t nfs -o nolock $NFSMOUNT $WORKDIR > /dev/null 2>&1
@@ -70,8 +72,18 @@ print_json () {
 	       
         fi
 
-        [ -d $JSONPATH ] || mkdir -p $JSONPATH
 
+	#print event to api
+        curl -sk "$H" -X POST --data "$JSON_PAYLOAD" $API > /dev/null 
+        if [ $? != 0 ];then
+        	echo "Error: $? - instapxe API unavailable"
+                exit 1
+        else
+                echo "API request successful."
+        fi
+
+	#print event to logfile
+	[ -d $JSONPATH ] || mkdir -p $JSONPATH
         echo $JSON_PAYLOAD >> $JSONFILE
 
 
@@ -289,7 +301,7 @@ print_reports_location () {
         echo ""
         echo "    Access reports at:"
         echo ""
-        echo "    http://$NTPSERVER/reports/hw_scan/$SVCTAG"
+        echo "    http://$NTPSERVER/reports/build/$SVCTAG"
         echo ""
 }
 

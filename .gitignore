@@ -9,5 +9,8 @@ nfs/sum_gen8/
 nfs/sum_latest/
 nfs/exports
 EFK/data/
-data/
+db/*
+2_config/instapxe.conf/bios/boot/
+2_config/instapxe.conf/efi32/boot/
+2_config/instapxe.conf/efi64/boot/
 production.env

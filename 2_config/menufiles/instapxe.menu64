@@ -27,10 +27,16 @@ LABEL SUMLATEST
 #  	KERNEL boot/spp/vmlinuz
 #  	APPEND initrd=boot/spp/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://$NFS_HOST/spp iso1mnt=/mnt/bootdevice
 
+
+#LABEL WDS
+#    MENU LABEL ^4) Windows Deployment Services (WDS)
+#    kernel pxechn.c32
+#    append $WDS_HOST::Boot\x64\bootmgfw.efi 
+
 LABEL WDS
     MENU LABEL ^4) Windows Deployment Services (WDS)
-    kernel pxechn.c32
-    append $WDS_HOST::Boot\x64\bootmgfw.efi 
+    COM32 pxechn.c32
+    append $WDS_HOST::Boot\x64\wdsnbp.com -W
 
 
 

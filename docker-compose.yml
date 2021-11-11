@@ -58,8 +58,6 @@ services:
     restart: unless-stopped
     env_file:
       - production.env
-    ports:
-      - 3306:3306
     volumes:
       - ./db/instapxe_db:/var/lib/mysql
     networks:

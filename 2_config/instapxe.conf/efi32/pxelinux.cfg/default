@@ -1,11 +1,111 @@
-UI vesamenu.c32
-TIMEOUT 300
+DEFAULT vesamenu.c32
+MENU INCLUDE pxelinux.cfg/instapxe.conf
+TIMEOUT 50 #100= 10 seconds
+ONTIMEOUT INSTAPXE
 
-LABEL memtest
-KERNEL memtest
-LABEL wds
-KERNEL pxeboot.0
-LABEL Abort
-KERNEL abortpxe.0
-LABEL local
-LOCALBOOT 0
+LABEL INSTAPXE
+MENU LABEL ^0) instaPXE Agent
+        KERNEL boot/instapxe_agent/instapxe.1
+        APPEND initrd=boot/instapxe_agent/instapxe.2 root=live:http://172.17.1.3/instapxe_agent/squashfs.img rootfstype=auto rd.live.image rd.writable.fsimg rw DEBUG=0 share_type=nfs share_location=172.17.1.3:/instapxe_agent share_opts=nolock loglevel=7 BUILD=0 selinux=0 edd=off rd.md=0 rd.dm=0 quiet – share_script=instapxe_agent_src/instapxe_agent.sh
+
+LABEL DSU
+	MENU LABEL ^1) Dell System Update (DSU)
+	KERNEL boot/dsu/sa.1
+        APPEND initrd=boot/dsu/sa.2 root=live:http://172.17.1.3/boot/dsu/LiveOS/squashfs.img rootfstype=auto rd.live.image rd.writable.fsimg rw DEBUG=0 share_type=nfs share_location=172.17.1.3:/dsu share_opts=nolock loglevel=7 BUILD=0 selinux=0 edd=off rd.md=0 rd.dm=0 quiet – share_script=drm_files/apply_bundles.sh
+
+LABEL SUMGEN8
+        MENU LABEL ^2) HP Smart Update Manager (SUM)-- Gen 8
+        KERNEL boot/sum_gen8/vmlinuz
+        APPEND initrd=boot/sum_gen8/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://172.17.1.3/sum_gen8 iso1opts=nolock iso1mnt=/mnt/bootdevice
+
+LABEL SUMLATEST
+        MENU LABEL ^3) HP Smart Update Manager (SUM)-- Latest
+        KERNEL boot/sum_latest/vmlinuz
+        APPEND initrd=boot/sum_latest/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://172.17.1.3/sum_latest iso1opts=nolock iso1mnt=/mnt/bootdevice
+
+#LABEL SPP
+#  	MENU LABEL ^2) HP Service Pack for Proliant (SPP) 
+#  	KERNEL boot/spp/vmlinuz
+#  	APPEND initrd=boot/spp/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://172.17.1.3/spp iso1mnt=/mnt/bootdevice
+
+
+#LABEL WDS
+#    MENU LABEL ^4) Windows Deployment Services (WDS)
+#    kernel pxechn.c32
+#    append 172.17.1.100::Boot\x64\bootmgfw.efi 
+
+LABEL WDS
+    MENU LABEL ^4) Windows Deployment Services (WDS)
+    COM32 pxechn.c32
+    append 172.17.1.100::Boot\x64\wdsnbp.com -W
+
+
+
+MENU BEGIN
+MENU LABEL ^5) Linux Distros
+	LABEL Back
+		MENU LABEL Back..
+                TEXT HELP
+                Return to previous menu.
+                ENDTEXT
+                MENU EXIT
+                MENU SEPARATOR
+		
+	MENU BEGIN Ubuntu
+	MENU TITLE Ubuntu 
+        	LABEL Back
+        	MENU LABEL Back..
+        	TEXT HELP
+        	Return to previous menu.
+        	ENDTEXT
+        	MENU EXIT
+        	MENU SEPARATOR
+        	MENU INCLUDE boot/ubuntu/ubuntu.menu
+	MENU END
+
+        MENU BEGIN CentOS
+        MENU TITLE CentOS
+                LABEL Back
+                MENU LABEL Back..
+                TEXT HELP
+                Return to previous menu.
+                ENDTEXT
+                MENU EXIT
+                MENU SEPARATOR
+                MENU INCLUDE boot/centos/centos.menu
+        MENU END
+MENU END
+
+
+LABEL VMware
+        MENU LABEL ^6) VMware ESXi
+        COM32 pxechn.c32
+        append boot/vmware/pxelinux.0
+
+MENU BEGIN Tools and Utilities
+MENU LABEL ^7) Tools and Utilities
+        LABEL Back
+        MENU LABEL Back..
+        TEXT HELP
+        Return to previous menu.
+        ENDTEXT
+        MENU EXIT
+        MENU SEPARATOR
+        MENU INCLUDE boot/utilities/utilities.menu
+MENU END
+
+LABEL BootLocal
+MENU LABEL ^8) BootLocal
+        localboot 0
+        TEXT HELP
+        Boot to local hard disk.
+        ENDTEXT
+
+LABEL reboot
+MENU LABEL ^9)Reboot
+	COM32 reboot.c32
+
+LABEL poweroff
+MENU LABEL ^-)Power Off
+	COM32 poweroff.c32
+
