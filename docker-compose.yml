@@ -12,8 +12,7 @@ services:
       - NET_ADMIN
     volumes:
       - ./2_config/instapxe-tftp.cfg/dnsmasq.conf:/pxe/dnsmasq/dnsmasq.conf
-    networks:
-      - host
+    network_mode: "host"
 
   instapxe-http:
     image: nginx:alpine
