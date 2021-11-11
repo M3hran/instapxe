@@ -107,6 +107,7 @@ esac
       
 	envsubst < $ENVFILE > $PENVFILE
 
+
 #else
 #	echo "HOST_IP already set."
 #fi

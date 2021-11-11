@@ -48,7 +48,7 @@ log-dhcp
 
 " >> /pxe/dnsmasq/dnsmasq.conf
 
-cp -R /var/opt/syslinux /var/opt/instapxe
+cp -R /var/opt/syslinux/* /var/opt/instapxe/
 
 # Start dnsmasq
 dnsmasq --no-daemon --conf-file=/pxe/dnsmasq/dnsmasq.conf $_dnsmasq_flags
