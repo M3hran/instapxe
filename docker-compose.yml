@@ -5,7 +5,7 @@ services:
   instapxe-tftp:
     image: instapxe/instapxe
     container_name: instapxe-tftp
-    restart: always
+    restart: unless-stopped
     env_file:
       - production.env
     cap_add:
@@ -18,6 +18,7 @@ services:
   instapxe-http:
     image: nginx:alpine
     container_name: instapxe-http
+    restart: unless-stopped
     ports:
       - 80:80
     volumes:
@@ -30,6 +31,7 @@ services:
   instapxe-nfs:
     image: erichough/nfs-server
     container_name: instapxe-nfs
+    restart: unless-stopped
     privileged: true
     ports:
       - 2049:2049
@@ -53,7 +55,7 @@ services:
   instapxe-db:
     image: mysql
     container_name: instapxe-db
-    restart: always
+    restart: unless-stopped
     env_file:
       - production.env
     ports:
@@ -64,15 +66,13 @@ services:
       - instapxe_net
 
   instapxe-backend:
-    build: ./1_src/web/backend
+    image: instapxe/instapxe-backend
     container_name: instapxe-backend
-    restart: always
+    restart: unless-stopped
     env_file:
       - production.env
     ports:
-      - 5000:5000
-    volumes:
-      - ./1_src/web/backend:/instapxe-app
+      - 9010:9010
     networks:
       - instapxe_net
     depends_on:
