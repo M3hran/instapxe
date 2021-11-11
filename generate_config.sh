@@ -160,6 +160,38 @@ else
 
 fi
 
+INSTALLDIR="./2_config/instapxe.conf"
+PATHS="$INSTALLDIR/bios $INSTALLDIR/efi32 $INSTALLDIR/efi64"
+for i in $PATHS
+do
+        #check for user mounted volume
+        
+	if [ -d ./tftp ]; then
+			cp -R ./tftp $i/boot 
+			echo "Boot ROMs loaded."
+	fi
+	if [[ $i == $INSTALLDIR/bios ]]; then
+		
+			#ln -s $i/pxelinux.cfg /instapxe.conf/bios
+		envsubst < ./2_config/menufiles/instapxe.menu > $i/pxelinux.cfg/default
+		echo "BIOS menus created."
+	fi
+	if [[ $i == $INSTALLDIR/efi32 ]]; then
+			
+			#ln -s $i/pxelinux.cfg /instapxe.conf/uefi32
+		envsubst < ./2_config/menufiles/instapxe.menu32 > $i/pxelinux.cfg/default
+		echo "UEFI32 menus created."
+
+	fi
+	if [[ $i == $INSTALLDIR/efi64 ]]; then
+			
+			#ln -s $i/pxelinux.cfg /instapxe.conf/uefi64
+		envsubst < ./2_config/menufiles/instapxe.menu64 > $i/pxelinux.cfg/default
+		echo "UEFI64 menus created."
+
+	fi
+        
+done
 
 #set nfs module
 modprobe nfsd

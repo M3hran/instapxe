@@ -8,14 +8,12 @@ services:
     restart: always
     env_file:
       - production.env
-    ports:
-      - 69:69/udp
+    cap_add:
+      - NET_ADMIN
     volumes:
-      - ./tftp:/instapxe/boot
-      - ./2_config/menufiles/instapxe.menu:/instapxe/instapxe.menu
-      - ./2_config/menufiles/instapxe.menu64:/instapxe/instapxe.menu64
+      - ./2_config/instapxe-tftp.cfg/dnsmasq.conf:/pxe/dnsmasq/dnsmasq.conf
     networks:
-      - instapxe_net
+      - host
 
   instapxe-http:
     image: nginx:alpine
@@ -48,7 +46,7 @@ services:
       - ./nfs/sum_gen8:/sum_gen8
       - ./nfs/sum_latest:/sum_latest
       - ./nfs/reports:/reports
-      - ./nfs/instapxe_agent:/instapxe_agent 
+      - ./nfs/instapxe_agent:/instapxe_agent
     networks:
       - instapxe_net
 
@@ -79,7 +77,6 @@ services:
       - instapxe_net
     depends_on:
       - instapxe-db
-
 
 networks:
   instapxe_net:

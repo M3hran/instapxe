@@ -14,6 +14,9 @@ _pxe_ip="$(ip -4 -o address show "$pxe_nic" | tr -s ' ' | cut -d' ' -f4 | sed -e
 # Make sure we have a folder where to store dnsmasq.conf
 mkdir -p "/pxe/dnsmasq"
 
+setup envsubst
+[ -e "/pxe/dnsmasq/dnsmasq.conf" ] && cp dnsmasq.conf /tmp/dnsmasq.conf && envsubst < /tmp/dnsmasq.conf > /pxe/dnsmasq/dnsmasq.conf
+
 # Append to default dnsmasq.conf
 [ -e "/pxe/dnsmasq/dnsmasq.conf" ] || echo "
 
@@ -44,6 +47,8 @@ log-queries
 log-dhcp
 
 " >> /pxe/dnsmasq/dnsmasq.conf
+
+cp -R /var/opt/syslinx /var/opt/instapxe
 
 # Start dnsmasq
 dnsmasq --no-daemon --conf-file=/pxe/dnsmasq/dnsmasq.conf $_dnsmasq_flags

@@ -22,7 +22,7 @@ ENV TERM=xterm TERMINFO=/etc/terminfo EDITOR=nano
 
 # Install support pkgs
 RUN apt-get update -qqy && apt-get install -y \
-    curl iputils-ping net-tools iproute2 wget nano man less sudo unzip xorriso tcpdump wimtools  build-essential\
+    curl iputils-ping net-tools iproute2 wget nano man less  sudo unzip xorriso tcpdump wimtools gettext-base build-essential\
     && $_apt_clean
 
 
@@ -36,7 +36,7 @@ RUN cd /dnsmasq-2.86 && make install
 
 
 # add syslinux binaries
-ADD syslinux-6.04-pre2 /var/opt/instapxe
+ADD syslinux-6.04-pre2 /var/opt/syslinux
 ADD run /
 RUN chmod +x /run
 
