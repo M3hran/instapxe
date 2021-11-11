@@ -12,6 +12,7 @@ services:
       - NET_ADMIN
     volumes:
       - ./2_config/instapxe-tftp.cfg/dnsmasq.conf:/pxe/dnsmasq/dnsmasq.conf
+      - ./2_config/instapxe.conf:/var/opt/instapxe
     network_mode: "host"
 
   instapxe-http:
@@ -72,6 +73,8 @@ services:
       - production.env
     ports:
       - 9010:9010
+    volumes:
+      - ./2_config/instapxe.conf:/instapxe
     networks:
       - instapxe_net
     depends_on:
