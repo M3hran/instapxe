@@ -384,6 +384,7 @@ case $EXITCODE in
 		echo "" 
 		echo ""
 		#shutdowng
+		restartg
 		;;
 esac
 

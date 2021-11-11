@@ -17,12 +17,12 @@ LABEL DSU
 LABEL SUMGEN8
         MENU LABEL ^2) HP Smart Update Manager (SUM)-- Gen 8
         KERNEL boot/sum_gen8/vmlinuz
-        APPEND initrd=boot/sum_gen8/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://$NFS_HOST/sum_gen8 iso1opts=nolock iso1mnt=/mnt/bootdevice
+        APPEND initrd=boot/sum_gen8/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=yes AUTOREBOOTONSUCCESS=no iso1=nfs://$NFS_HOST/sum_gen8 iso1opts=nolock iso1mnt=/mnt/bootdevice
 
 LABEL SUMLATEST
         MENU LABEL ^3) HP Smart Update Manager (SUM)-- Latest
         KERNEL boot/sum_latest/vmlinuz
-        APPEND initrd=boot/sum_latest/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://$NFS_HOST/sum_latest iso1opts=nolock iso1mnt=/mnt/bootdevice
+        APPEND initrd=boot/sum_latest/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=yes AUTOREBOOTONSUCCESS=no iso1=nfs://$NFS_HOST/sum_latest iso1opts=nolock iso1mnt=/mnt/bootdevice
 
 
 LABEL WDS
