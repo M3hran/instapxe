@@ -1,0 +1,44 @@
+##########################################################################
+# author: m3hran
+# image name: instapxe/instapxe
+#
+# copyright (c) instaPXE -- Parallax System LLC 2021
+# LICENSE AGREEMENT: https://instapxe.com/eula
+#
+# 
+#      
+#########################################################################
+FROM ubuntu:21.04
+
+
+ARG _clean="rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*"
+ARG _apt_clean="eval apt-get clean && $_clean"
+ARG DEBIAN_FRONTEND=noninteractive
+# apt-get clean -y && apt-get autoclean -y && apt-get autoremove -y
+
+# Set default TERM and EDITOR
+# ENV TERM=tmux-256color TERMINFO=/etc/terminfo EDITOR=nano
+ENV TERM=xterm TERMINFO=/etc/terminfo EDITOR=nano
+
+# Install support pkgs
+RUN apt-get update -qqy && apt-get install -y \
+    curl iputils-ping net-tools iproute2 wget nano man less sudo unzip xorriso tcpdump wimtools  build-essential\
+    && $_apt_clean
+
+
+# Install dnsmasq
+RUN wget -O /tmp/dnsmasq.tar.gz https://thekelleys.org.uk/dnsmasq/dnsmasq-2.86.tar.gz \
+    && tar zxf /tmp/dnsmasq.tar.gz -C / --skip-old-files && $_clean
+
+RUN cd /dnsmasq-2.86 && make install
+
+# RUN echo foo
+
+
+# add syslinux binaries
+ADD syslinux-6.04-pre2 /var/opt/instapxe
+ADD run /
+RUN chmod +x /run
+
+EXPOSE 67 67/udp 69 69/udp
+ENTRYPOINT ["/run"]

@@ -1,5 +1,5 @@
 NAME = instapxe/instapxe
-VERSION = 0.9
+VERSION = 1.0
 C_NAME = instapxe
 
 .PHONY: all build test tag_latest release install clean
@@ -7,13 +7,13 @@ C_NAME = instapxe
 all: clean build install
 
 build: 
-	docker build -t $(NAME):$(VERSION) -f instapxebuild.docker . 
+	docker build -t $(NAME):$(VERSION) -f dockerfile . 
 
 clean: 
 	docker rm -vf $(C_NAME)
 	
 install:
-	docker run -d -p 69:69/udp --name $(C_NAME) $(NAME):$(VERSION)
+	docker run --cap-add=NET_ADMIN --network host -d -p 69:69 -p 67:67/tcp -p 67:67/udp --name $(C_NAME) $(NAME):$(VERSION)
 
 tag_latest:
 	docker tag $(NAME):$(VERSION) $(NAME):latest

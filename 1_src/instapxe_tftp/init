@@ -16,15 +16,18 @@ do
                 fi
                 if [ -f /instapxe/instapxe.menu ] && [[ $i == $INSTALLDIR/bios ]]; then
                         #cp /instapxe/instapxe.menu $i/pxelinux.cfg/default
+                        ln -s $i/pxelinux.cfg /instapxe.conf/bios
 			envsubst < /instapxe/instapxe.menu > $i/pxelinux.cfg/default
                 fi
                 if [ -f /instapxe/instapxe.menu32 ] && [[ $i == $INSTALLDIR/efi32 ]]; then
                         #cp /instapxe/instapxe.menu32 $i/pxelinux.cfg/default
+                        ln -s $i/pxelinux.cfg /instapxe.conf/uefi32
 			envsubst < /instapxe/instapxe.menu32 > $i/pxelinux.cfg/default
 
                 fi
                 if [ -f /instapxe/instapxe.menu64 ] && [[ $i == $INSTALLDIR/efi64 ]]; then
                         #cp /instapxe/instapxe.menu64 $i/pxelinux.cfg/default
+                        ln -s $i/pxelinux.cfg /instapxe.conf/uefi64
 			envsubst < /instapxe/instapxe.menu64 > $i/pxelinux.cfg/default
 
                 fi

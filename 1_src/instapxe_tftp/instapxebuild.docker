@@ -14,9 +14,9 @@ FROM alpine:3.12.0
 ADD syslinux-6.04-pre2 /var/opt/instapxe
 
 # Add safe defaults that can be overriden easily.
-ADD config/instapxe_bios.cfg /var/opt/instapxe/bios/pxelinux.cfg/
-ADD config/instapxe_uefi32.cfg /var/opt/instapxe/efi32/pxelinux.cfg/
-ADD config/instapxe_uefi64.cfg /var/opt/instapxe/efi64/pxelinux.cfg/
+#ADD config/instapxe_bios.cfg /var/opt/instapxe/bios/pxelinux.cfg/
+#ADD config/instapxe_uefi32.cfg /var/opt/instapxe/efi32/pxelinux.cfg/
+#ADD config/instapxe_uefi64.cfg /var/opt/instapxe/efi64/pxelinux.cfg/
 
 # Support clients that use backslash instead of forward slash.
 #COPY mapfile /instapxe/
