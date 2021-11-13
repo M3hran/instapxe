@@ -30,6 +30,9 @@ JSONPATH="$DSULOGPATHREMOTE/json"
 JSONFILE="$JSONPATH/"$SVCTAG"_updates.json"
 megacli=/opt/MegaRAID/MegaCli/MegaCli64
 racadm=/opt/dell/srvadmin/sbin/racadm
+API="http://172.17.1.3:9010/api/device/"
+H='-H "Content-Type: application/json" -H "Accept: application/json"'
+
 
 #ntpdate -u $NTPSERVER
 mkdir -p $DSULOGPATHHOST
@@ -69,6 +72,20 @@ print_json () {
                JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"Dell\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"mac\":\"$MAC\",\"location\":\"$LOCATION\",\"level\":\"error\",\"stage\":\"Update\",\"msg\":\"exited dsu with error\"}"
 	       
         fi
+
+
+
+        #print event to api
+        curl -sk "$H" -X POST --data "$JSON_PAYLOAD" $API > /dev/null
+        if [ $? != 0 ];then
+                echo "Error: $? - instapxe API unavailable"
+                exit 1
+        else
+                echo "API request successful."
+        fi
+
+
+
 
         [ -d $JSONPATH ] || mkdir -p $JSONPATH
 
@@ -297,7 +314,7 @@ change_bios_mode(){
 shutdowng() {
 
        finalize_reports
-       change_bios_mode Uefi
+       #change_bios_mode Uefi
        echo "shutting down!"
        sleep 5
        shutdown -h now
@@ -485,7 +502,8 @@ case $EXITCODE in
                 	echo "Update completed at: " `timestamp` && print_json "COMPLETED"
                 	echo "DONE. NO MORE APPLICABLE UPDATES."
                 	echo ""
-                	shutdowng
+                        finalize_reports
+			shutdown -r now 
 
 		fi
 		;;
