@@ -32,6 +32,7 @@ $SVCTAG = $sysinfo.BiosSeralNumber
 $MANUFACTURER = $sysinfo.BiosManufacturer
 $MODEL = $sysinfo.CsModel
 $OS_NAME= $sysinfo.OsName
+$SVCTAG=$SVCTAG.Trim()
 
 $LOGPATH = "Z:\build\" + "$SVCTAG\"
 $LOGFILE = "$LOGPATH" + "$SVCTAG" + "_imaging_log.txt"
@@ -174,11 +175,32 @@ $Inventory | Export-Csv $SUMFILE
 $Inventory | ConvertTo-Json | Out-File -encoding utf8 -FilePath $SUMJSON
 Write-Output "$(Get-TimeStamp) System build summary created..." | Out-File -encoding utf8 -FilePath $LOGFILE -Append
 
+
+
+
 $jsonpayload="{`"time`":`"$(Get-TimeStamp)`",`"manufacturer`":`"$MANUFACTURER`",`"svctag`":`"$SVCTAG`",`"model`":`"$MODEL`",`"level`":`"info`",`"stage`":`"imaging`",`"os_name`":`"$OS_NAME`",`"msg`":`"completed`"}"
 
 Write-Output $jsonpayload | Out-File -encoding utf8 -FilePath $JSONFILE -Append
 
+
+
+$Param = @{
+	
+	Method 	= "POST"
+	Uri	= "https://172.17.1.3:9010/api/device/"
+        ContentType	= "application/json"
+	Body	= $jsonpayload
+
+}
+Invoke-RestMethod @Param
+
+
 Write-Output "$(Get-TimeStamp) OS Image Deployment Completed. Shutting Down..." | Out-File -encoding utf8 -FilePath $LOGFILE -Append
+
+
+
+
+
 
 
 shutdown.exe /s

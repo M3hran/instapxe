@@ -64,7 +64,7 @@ services:
       - instapxe_net
 
   instapxe-backend:
-    image: instapxe/instapxe-backend
+    image: instapxe/instapxe-backend:0.2
     container_name: instapxe-backend
     restart: unless-stopped
     env_file:
