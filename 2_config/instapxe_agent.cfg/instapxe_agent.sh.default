@@ -10,6 +10,7 @@
 
 
 printf "\033c"
+
 start_time=$SECONDS
 MAC=$(cat /sys/class/net/*/address | head -n 1)
 NTPSERVER="172.17.1.3"
@@ -31,12 +32,21 @@ JSONFILE="$JSONPATH/"$SVCTAG"_updates.json"
 LOCATION=""
 API="http://172.17.1.3:9010/api/device/"
 H='-H "Content-Type: application/json" -H "Accept: application/json"'
+EXITCODE=0
+
 
 mkdir -p $WORKDIR > /dev/null 2>&1
 mount -t nfs -o nolock $NFSMOUNT $WORKDIR > /dev/null 2>&1
 mkdir -p $INSTAPXE_LOGPATH_REMOTE $IPMILOGPATH $JSONPATH $HDDLOGPATH $SMARTLOGPATH > /dev/null 2>&1
 touch $LOGFILE $JSONFILE $SMARTFILE
 
+
+if [ -c /dev/ipmi0 ] || [ -c /dev/ipmi/0 ] || [ -c /dev/ipmidev/0 ] ; then
+	if ! $(ipmitool sel clear);then
+		
+		print_json "ERROR" "corrupted BMC..try rebooting"	     
+	fi 
+fi
 
 timestamp() {
   date +"%m/%d/%Y-%H:%M:%S" # current time
@@ -69,7 +79,10 @@ print_json () {
 	elif [[ "$1" =~ ^(EXITED)$ ]]; then
 
                JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"$MANUFACTURER\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"mac\":\"$MAC\",\"location\":\"$LOCATION\",\"level\":\"error\",\"stage\":\"hw_scan\",\"msg\":\"exited hardware scan with error\"}"
-	       
+	
+ 	elif [[ "$1" =~ ^(ERROR)$ ]]; then
+
+               JSON_PAYLOAD="{\"time\":\"`timestamp`\",\"manufacturer\":\"$MANUFACTURER\",\"svctag\":\"$SVCTAG\",\"model\":\"$MODEL\",\"mac\":\"$MAC\",\"location\":\"$LOCATION\",\"level\":\"error\",\"stage\":\"hw_scan\",\"msg\":\"$2 $3\"}"       
         fi
 
 
@@ -123,8 +136,7 @@ gather_sensor_data() {
 	echo "Performing health checks on sensors..."
 
 	if [ -c /dev/ipmi0 ] || [ -c /dev/ipmi/0 ] || [ -c /dev/ipmidev/0 ] ; then
-        ipmitool sel list > $IPMILOGPATH/"$SVCTAG"_1_bios_errors.txt
-        ipmitool sdr list > $IPMILOGPATH/"$SVCTAG"_2_sensors_health_summary.txt
+	ipmitool chassis selftest > $IPMILOGPATH/"$SVCTAG"_1_bios_errors.txt
 	ipmitool sdr type 0x01 > "$IPMILOGPATH"/"$SVCTAG"_temp.txt
         ipmitool sdr type 0x02 > "$IPMILOGPATH"/"$SVCTAG"_voltage.txt
         ipmitool sdr type 0x03 > "$IPMILOGPATH"/"$SVCTAG"_current.txt
@@ -169,9 +181,12 @@ gather_sensor_data() {
         ipmitool sdr type 0x2a > "$IPMILOGPATH"/"$SVCTAG"_session_audit.txt
         ipmitool sdr type 0x2b > "$IPMILOGPATH"/"$SVCTAG"_version_change.txt
         ipmitool sdr type 0x2c > "$IPMILOGPATH"/"$SVCTAG"_fru_state.txt
-	#clear_eventlogs
+        ipmitool sdr list > $IPMILOGPATH/"$SVCTAG"_2_sensors_health_summary.txt
+   	ipmitool sel list >> $IPMILOGPATH/"$SVCTAG"_1_bios_errors.txt
+	#error out if there is no bmc
 	else
 		echo "Error: IPMI controller not found"
+		EXITCODE=1
 	fi
 
 }
@@ -194,7 +209,6 @@ gather_smart_data() {
 
 	declare -A address
 	CARG=""
-	EXITCODE=0
 	echo "Gathering S.M.A.R.T. Disk data..."
 	cat /DISCLAIMER >> "$HDDLOGPATH"/"$SVCTAG"_SMART_health_status.txt
         cat /DISCLAIMER >> $SMARTFILE 
@@ -218,7 +232,6 @@ gather_smart_data() {
 		
 		if [[ $k =~ /dev/sd* || $k =~ /dev/hd* || $k =~ /dev/sg* || $k =~ megaraid* ]]; then
 
-			EXITCODE=0
 			case $MAKE in
 
         			*"Dell"*)
@@ -316,6 +329,35 @@ print_sysinfo() {
 
 }
 
+error_check() {
+
+	BIOSERRORS="$IPMILOGPATH/"$SVCTAG"_1_bios_errors.txt"
+
+	grep -i 'fail\|error\|lost\|corrupt' $BIOSERRORS >> "$IPMILOGPATH/"$SVCTAG"_parsed_errors.txt"
+
+
+	if [ -s "$IPMILOGPATH/"$SVCTAG"_parsed_errors.txt" ]; then
+
+		echo "Following errors detected:"
+
+
+	        IFS=$'\n' read -d '' -r -a lines < "$IPMILOGPATH/"$SVCTAG"_parsed_errors.txt"
+
+        
+        	for k in "${lines[@]}"
+		do
+
+			 E_DEVICE=$(echo "$k" | awk -F\| '{print $4}')
+                	 E_DESC=$(echo "$k" | awk -F \| '{print $5}' )
+			 echo "		$E_DEVICE   $E_DESC"
+			 print_json "ERROR" "$E_DEVICE" "$E_DESC"
+		done
+
+	EXITCODE=1
+	fi
+}
+
+
 (
 
 shopt -s expand_aliases > /dev/null 2>&1
@@ -341,7 +383,6 @@ gather_smart_data
 gather_sensor_data hw_scan
 
 
-EXITCODE=0
 case $MAKE in
 
 	*"Dell"*)
@@ -367,6 +408,7 @@ case $MAKE in
 		;;
 esac	
 
+error_check
 
 case $EXITCODE in
 

@@ -5,6 +5,18 @@ function Get-TimeStamp {
     return "{0:MM/dd/yyyy}-{0:HH:mm:ss}" -f (Get-Date)  
 }
 
+function Get-ClusterLocation {
+
+        (Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Confirm:$False) | out-null
+        (Install-Module -Name PSDiscoveryProtocol -Force -Confirm:$False) | out-null
+        $Packet = Invoke-DiscoveryProtocolCapture -Force
+        $data = Get-DiscoveryProtocolData -Packet $Packet
+        $rack = $data.Device.Substring(1,1)
+        $u = $data.Port.Split("/")[1]
+        $location = "Rack$($rack)-U$($u)"
+        return $location
+}
+
 ## Install NFS-Client.
 #Install-WindowsFeature -Name NFS-Client
 
@@ -33,6 +45,7 @@ $MANUFACTURER = $sysinfo.BiosManufacturer
 $MODEL = $sysinfo.CsModel
 $OS_NAME= $sysinfo.OsName
 $SVCTAG=$SVCTAG.Trim()
+$MAC = $(Get-WmiObject win32_networkadapterconfiguration | where {$_.IPAddress -ne $null} | select macaddress).macaddress
 
 $LOGPATH = "Z:\build\" + "$SVCTAG\"
 $LOGFILE = "$LOGPATH" + "$SVCTAG" + "_imaging_log.txt"
@@ -178,26 +191,27 @@ Write-Output "$(Get-TimeStamp) System build summary created..." | Out-File -enco
 
 
 
-$jsonpayload="{`"time`":`"$(Get-TimeStamp)`",`"manufacturer`":`"$MANUFACTURER`",`"svctag`":`"$SVCTAG`",`"model`":`"$MODEL`",`"level`":`"info`",`"stage`":`"imaging`",`"os_name`":`"$OS_NAME`",`"msg`":`"completed`"}"
+$jsonpayload="{`"manufacturer`":`"$MANUFACTURER`",`"svctag`":`"$SVCTAG`",`"model`":`"$MODEL`",`"mac`":`"$MAC`",`"location`":`"$(Get-ClusterLocation)`",`"time`":`"$(Get-TimeStamp)`", `"level`":`"info`",`"stage`":`"imaging`",`"os_name`":`"$OS_NAME`",`"msg`":`"completed`"}"
 
 Write-Output $jsonpayload | Out-File -encoding utf8 -FilePath $JSONFILE -Append
 
 
 
-$Param = @{
-	
-	Method 	= "POST"
-	Uri	= "https://172.17.1.3:9010/api/device/"
-        ContentType	= "application/json"
-	Body	= $jsonpayload
 
-}
-Invoke-RestMethod @Param
 
 
 Write-Output "$(Get-TimeStamp) OS Image Deployment Completed. Shutting Down..." | Out-File -encoding utf8 -FilePath $LOGFILE -Append
 
 
+$Param = @{
+	
+	Method 	= "POST"
+	Uri	= "http://172.17.1.3:9010/api/device/"
+        ContentType	= "application/json"
+	Body	= $jsonpayload
+
+}
+Invoke-RestMethod @Param
 
 
 
