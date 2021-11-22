@@ -41,12 +41,7 @@ mkdir -p $INSTAPXE_LOGPATH_REMOTE $IPMILOGPATH $JSONPATH $HDDLOGPATH $SMARTLOGPA
 touch $LOGFILE $JSONFILE $SMARTFILE
 
 
-if [ -c /dev/ipmi0 ] || [ -c /dev/ipmi/0 ] || [ -c /dev/ipmidev/0 ] ; then
-	if ! $(ipmitool sel clear);then
-		
-		print_json "ERROR" "corrupted BMC..try rebooting"	     
-	fi 
-fi
+
 
 timestamp() {
   date +"%m/%d/%Y-%H:%M:%S" # current time
@@ -129,6 +124,25 @@ gather_dmidecode() {
 
 }
 
+
+clear_eventlogs(){
+
+
+if [ -c /dev/ipmi0 ] || [ -c /dev/ipmi/0 ] || [ -c /dev/ipmidev/0 ] ; then
+	
+	
+	ipmitool sel clear
+	if [ $? -ne 0 ]; then
+	      	echo "Error: unable to clear BMC logs, correupt cache, try rebooting!"
+		print_json "ERROR" "unable to clear BMC logs, correupt cache, try rebooting!"
+		EXITCODE=1
+	fi
+	
+
+fi
+
+}
+
 gather_sensor_data() {
 	
 	#local STATE=$1
@@ -136,7 +150,7 @@ gather_sensor_data() {
 	echo "Performing health checks on sensors..."
 
 	if [ -c /dev/ipmi0 ] || [ -c /dev/ipmi/0 ] || [ -c /dev/ipmidev/0 ] ; then
-	ipmitool chassis selftest > $IPMILOGPATH/"$SVCTAG"_1_bios_errors.txt
+	ipmitool chassis selftest > $IPMILOGPATH/"$SVCTAG"_3_selftest_results.txt
 	ipmitool sdr type 0x01 > "$IPMILOGPATH"/"$SVCTAG"_temp.txt
         ipmitool sdr type 0x02 > "$IPMILOGPATH"/"$SVCTAG"_voltage.txt
         ipmitool sdr type 0x03 > "$IPMILOGPATH"/"$SVCTAG"_current.txt
@@ -182,7 +196,7 @@ gather_sensor_data() {
         ipmitool sdr type 0x2b > "$IPMILOGPATH"/"$SVCTAG"_version_change.txt
         ipmitool sdr type 0x2c > "$IPMILOGPATH"/"$SVCTAG"_fru_state.txt
         ipmitool sdr list > $IPMILOGPATH/"$SVCTAG"_2_sensors_health_summary.txt
-   	ipmitool sel list >> $IPMILOGPATH/"$SVCTAG"_1_bios_errors.txt
+   	ipmitool sel list > $IPMILOGPATH/"$SVCTAG"_1_bios_errors.txt
 	#error out if there is no bmc
 	else
 		echo "Error: IPMI controller not found"
@@ -281,9 +295,6 @@ get_cluster_location() {
 	LOCATION="Rack$RACK-U$RU"
 }
 
-clear_eventlogs(){
-	ipmitool sel clear 
-}
 
 change_bios_mode(){
         local mode=$1
@@ -331,11 +342,9 @@ print_sysinfo() {
 
 error_check() {
 
+	# BIOS Error check
 	BIOSERRORS="$IPMILOGPATH/"$SVCTAG"_1_bios_errors.txt"
-
-	grep -i 'fail\|error\|lost\|corrupt' $BIOSERRORS >> "$IPMILOGPATH/"$SVCTAG"_parsed_errors.txt"
-
-
+	grep -i 'fail\|error\|corrupt\|redundancy' $BIOSERRORS | tail -n 10 > "$IPMILOGPATH/"$SVCTAG"_parsed_errors.txt"
 	if [ -s "$IPMILOGPATH/"$SVCTAG"_parsed_errors.txt" ]; then
 
 		echo "Following errors detected:"
@@ -355,6 +364,28 @@ error_check() {
 
 	EXITCODE=1
 	fi
+	# Self test check
+	SELFTEST="$IPMILOGPATH/"$SVCTAG"_3_selftest_results.txt"
+	grep -i 'fail\|error\|corrupt\|redundancy' $SELFTEST > "$IPMILOGPATH/"$SVCTAG"_parsed_selfcheck_errors.txt"
+	if [ -s "$IPMILOGPATH/"$SVCTAG"_parsed_selfcheck_errors.txt" ]; then
+
+                echo "Following self-check errors detected:"
+
+
+                IFS=$'\n' read -d '' -r -a lines < "$IPMILOGPATH/"$SVCTAG"_parsed_selfcheck_errors.txt"
+
+
+                for k in "${lines[@]}"
+                do
+
+                         E_DESC=$(echo "$k")
+                         echo "         $E_DESC"
+                         print_json "ERROR" "$E_DESC" 
+                done
+
+        EXITCODE=1
+        fi
+
 }
 
 
@@ -409,6 +440,7 @@ case $MAKE in
 esac	
 
 error_check
+clear_eventlogs
 
 case $EXITCODE in
 

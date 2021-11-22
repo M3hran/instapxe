@@ -46,6 +46,7 @@ services:
       - ./nfs/exports:/etc/exports
       - ./nfs/dsu:/dsu
       - ./nfs/sum_gen8:/sum_gen8
+      - ./nfs/sum_gen7:/sum_gen7
       - ./nfs/sum_latest:/sum_latest
       - ./nfs/reports:/reports
       - ./nfs/instapxe_agent:/instapxe_agent
@@ -64,7 +65,7 @@ services:
       - instapxe_net
 
   instapxe-backend:
-    image: instapxe/instapxe-backend:0.2
+    image: instapxe/instapxe-backend:0.3
     container_name: instapxe-backend
     restart: unless-stopped
     env_file:

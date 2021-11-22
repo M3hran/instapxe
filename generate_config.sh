@@ -169,7 +169,7 @@ do
         #check for user mounted volume
         
 	if [ -d ./tftp ]; then
-			cp -R ./tftp $i/boot 
+			cp -R ./tftp/* $i/boot 
 			echo "Boot ROMs loaded."
 	fi
 	if [[ $i == $INSTALLDIR/bios ]]; then

@@ -26,10 +26,12 @@ UPDATELOGS="$DSULOGPATHREMOTE/updatelogs"
 API="http://172.17.1.3:9010/api/device/"
 H="Content-Type:application/json" 
 
-ct="$(wget --server-response --spider google.com 2>&1 | grep Date | head -n1 | sed 's/Date: //g')"
-nt="$(date -d "$ct" -D "%d %b %Y %T" +'%Y-%m-%d %H:%M:%S')
 
+export TZ=UTC
+ct="$(wget --server-response --spider google.com 2>&1 | grep Date | head -n1 | sed 's/.*, //g')"
+nt="$(date -d "$ct" -D "%d %b %Y %T" +'%Y-%m-%d %H:%M:%S')"
 date -s "$nt"
+
 export TZ=America/New_York
 mkdir -p $WORKDIR > /dev/null 2>&1
 mount -t nfs -o nolock $NFSMOUNT $WORKDIR > /dev/null 2>&1
@@ -128,10 +130,10 @@ case "$1" in
 
 
 	*end*)
-		finalize_reports
 		echo ""
                 echo "Update completed at: " `timestamp` && print_json "COMPLETED"
-                elapsed_time
+		finalize_reports
+		elapsed_time
 		echo "DONE. NO MORE APPLICABLE UPDATES."
                 echo ""
                

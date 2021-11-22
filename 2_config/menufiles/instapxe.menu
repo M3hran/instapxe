@@ -91,18 +91,16 @@ MENU LABEL ^8) Tools and Utilities
 MENU END
 
 LABEL BootLocal
-MENU LABEL ^9) BootLocal
+	MENU LABEL ^9) BootLocal
         localboot 0
         TEXT HELP
         Boot to local hard disk.
         ENDTEXT
 
 LABEL reboot
-MENU LABEL ^r) Reboot
-	MENU LABEL Reboot
+	MENU LABEL ^r) Reboot
 	COM32 reboot.c32
 
 LABEL poweroff
-MENU LABEL ^p) Power off
-	MENU LABEL Power Off
+	MENU LABEL ^f) Power off
 	COM32 poweroff.c32
