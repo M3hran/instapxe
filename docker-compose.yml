@@ -65,15 +65,18 @@ services:
       - instapxe_net
 
   instapxe-backend:
-    image: instapxe/instapxe-backend:0.3
+    image: instapxe/instapxe-backend:0.5
     container_name: instapxe-backend
     restart: unless-stopped
+    privileged: true
     env_file:
       - production.env
     ports:
       - 9010:9010
     volumes:
       - ./2_config/instapxe.conf:/instapxe
+      - /var/run/dbus:/var/run/dbus 
+      - /dev/bus/usb:/dev/bus/usb
     networks:
       - instapxe_net
     depends_on:
