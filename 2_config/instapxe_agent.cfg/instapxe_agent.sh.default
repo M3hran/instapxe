@@ -342,13 +342,20 @@ print_sysinfo() {
 
 error_check() {
 
+	# Missing Serial number check
+	if [[ "$SVCTAG" == "" ]]; then
+		echo "Following errors detected:"
+		print_json "ERROR: missing SVCTAG/SERIAL number"
+                EXITCODE=1
+	fi
+	
+
 	# BIOS Error check
 	BIOSERRORS="$IPMILOGPATH/"$SVCTAG"_1_bios_errors.txt"
 	grep -i 'fail\|error\|corrupt\|redundancy' $BIOSERRORS | tail -n 10 > "$IPMILOGPATH/"$SVCTAG"_parsed_errors.txt"
 	if [ -s "$IPMILOGPATH/"$SVCTAG"_parsed_errors.txt" ]; then
 
 		echo "Following errors detected:"
-
 
 	        IFS=$'\n' read -d '' -r -a lines < "$IPMILOGPATH/"$SVCTAG"_parsed_errors.txt"
 
@@ -358,11 +365,19 @@ error_check() {
 
 			 E_DEVICE=$(echo "$k" | awk -F\| '{print $4}')
                 	 E_DESC=$(echo "$k" | awk -F \| '{print $5}' )
-			 echo "		$E_DEVICE   $E_DESC"
-			 print_json "ERROR" "$E_DEVICE" "$E_DESC"
+			 #skip powersupply errors mostly loose cables
+			 if [[ "$E_DEVICE" == *"Power Supply"* ]]; then
+
+			 	echo "		$E_DEVICE   $E_DESC  skipping..false positive?"
+			else
+
+			 	echo "		$E_DEVICE   $E_DESC"
+			 	print_json "ERROR" "$E_DEVICE" "$E_DESC"
+				EXITCODE=1
+			fi
 		done
 
-	EXITCODE=1
+
 	fi
 	# Self test check
 	SELFTEST="$IPMILOGPATH/"$SVCTAG"_3_selftest_results.txt"

@@ -1,7 +1,7 @@
 #!/bin/bash
-final_report=/opt/temp/instapxe/nfs/reports/final_report.csv
+final_report=/home/ubuntu/final_report.csv
 
-[ -f "$final_report" ] || touch $final_report
+[ -f "$final_report" ] || rm $final_report && touch $final_report
 
 for dir in /opt/temp/instapxe/nfs/reports/build/* 
 do
