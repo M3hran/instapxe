@@ -442,7 +442,7 @@ case $EXITCODE in
 		echo "Update completed at: " `timestamp` && print_json "COMPLETED"
 		echo "DONE. NO MORE APPLICABLE UPDATES."
 		echo ""
-		shutdowng
+		shutdown -r now
 
 		;;
 	
