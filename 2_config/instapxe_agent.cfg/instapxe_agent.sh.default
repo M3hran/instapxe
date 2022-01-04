@@ -398,7 +398,7 @@ error_check() {
         fi
 
 }
-check_make_model {
+check_make_model() {
 	
 	if [ -z "$MANUFACTURER" ]; then
 		if [ -z "$MODEL" ]; then
