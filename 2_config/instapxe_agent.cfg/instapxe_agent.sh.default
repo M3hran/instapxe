@@ -225,8 +225,8 @@ gather_smart_data() {
 	declare -A address
 	CARG=""
 	echo "Gathering S.M.A.R.T. Disk data..."
-	cat /DISCLAIMER >> "$HDDLOGPATH"/"$SVCTAG"_SMART_health_status.txt
-        cat /DISCLAIMER >> $SMARTFILE 
+	cat /DISCLAIMER > "$HDDLOGPATH"/"$SVCTAG"_SMART_health_status.txt
+    cat /DISCLAIMER > $SMARTFILE 
 	#cat /DISCLAIMER >> "$HDDLOGPATH"/"$SVCTAG"_SMART_health_status.txt
 	#get raid contoller info
 	lspci | egrep -i 'raid' >> $SMARTFILE
@@ -251,7 +251,7 @@ gather_smart_data() {
 
         			*"Dell"*)
 					if [[ $k =~ megaraid* ]]; then
-						cat /DISCLAIMER >> "$HDDLOGPATH"/"$SVCTAG"_drive_"$j".txt	
+						cat /DISCLAIMER > "$HDDLOGPATH"/"$SVCTAG"_drive_"$j".txt	
 						smartctl -a -d "$k" /dev/sg0 >> "$HDDLOGPATH"/"$SVCTAG"_drive_"$j".txt
 						
 						#get health status 
@@ -262,7 +262,7 @@ gather_smart_data() {
         			*"HP"*)
 					
 					CARG="cciss"
-					cat /DISCLAIMER >> "$HDDLOGPATH"/"$SVCTAG"_drive_"$j".txt
+					cat /DISCLAIMER > "$HDDLOGPATH"/"$SVCTAG"_drive_"$j".txt
 					smartctl -a -d "$CARG","$j" "$k" >> "$HDDLOGPATH"/"$SVCTAG"_drive_"$j".txt
 
 					#get health status
@@ -272,7 +272,7 @@ gather_smart_data() {
 
         			*)
 
-                			echo "$MAKE"
+                			echo "SMART disk scan couldnot detect manufacturer - $MAKE"
                 			EXITCODE=1
                 			;;
 			esac
@@ -411,10 +411,12 @@ check_make_model() {
 					MANUFACTURER="Dell"
 					MAKE=$(echo "$MANUFACTURER" | sed -e 's:^Dell$:Dell:' -e 's:^HP$:HP:' -e 's:^VMware$:VMware:')
 					MODEL="R620"
+					echo "Set MAKE/MODEL based on SVCTAG"
 				else
 					MANUFACTURER="HP"
 					MAKE=$(echo "$MANUFACTURER" | sed -e 's:^Dell$:Dell:' -e 's:^HP$:HP:' -e 's:^VMware$:VMware:')
 					MODEL="DL360 G8"
+					echo "Set Make/MODEL based on SERIAL"
 				fi
 			fi
 		else
