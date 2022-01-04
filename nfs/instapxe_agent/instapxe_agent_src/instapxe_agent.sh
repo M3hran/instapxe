@@ -206,7 +206,8 @@ gather_sensor_data() {
 }
 
 gather_mega_data(){
-	megacli=/opt/MegaRAID/MegaCli/MegaCli64
+		
+		megacli=/opt/MegaRAID/MegaCli/MegaCli64
         echo "Gathering MegaRAID Controller & Disk data.."
         $megacli -ShowSummary -aALL > "$HDDLOGPATH"/"$SVCTAG"_megacli_summary.txt
         $megacli -PDList -aALL > "$HDDLOGPATH"/"$SVCTAG"_physicaldisk_list.txt
@@ -279,11 +280,6 @@ gather_smart_data() {
 			j=$(($j + 1))
 		fi
 	done
-
-	
-    		
-
-
 
 }
 get_cluster_location() {
@@ -402,7 +398,33 @@ error_check() {
         fi
 
 }
+check_make_model {
+	
+	if [ -z "$MANUFACTURER" ]; then
+		if [ -z "$MODEL" ]; then
+			if [ -z "$SVCTAG" ]; then
+				echo "Error: No System info for Make,Model,and Serial."
+				EXITCODE=1
+			else 
+				if [ ${#SVCTAG} -eq 7 ]; then
+					#REFACTOR: it would be better if we test the service tag against an api for this info
+					MANUFACTURER="Dell"
+					MAKE=$(echo "$MANUFACTURER" | sed -e 's:^Dell$:Dell:' -e 's:^HP$:HP:' -e 's:^VMware$:VMware:')
+					MODEL="R620"
+				else
+					MANUFACTURER="HP"
+					MAKE=$(echo "$MANUFACTURER" | sed -e 's:^Dell$:Dell:' -e 's:^HP$:HP:' -e 's:^VMware$:VMware:')
+					MODEL="DL360 G8"
+				fi
+			fi
+		else
+			echo "Error: No System info for Manufacturer"
+			EXITCODE=1
+		#REFACTOR: lookup model from an api for the manufacturer in this case
+		fi
+	fi
 
+}
 
 (
 
@@ -414,6 +436,8 @@ echo "diskspacecheck=0" >> /etc/yum.conf > /dev/null 2>&1
 export LANG=en_US.UTF-8
 
 clear_eventlogs
+#see if make/model is not blank, if it is try to find a match
+check_make_model
 
 cat /DISCLAIMER
 
@@ -443,15 +467,15 @@ case $MAKE in
 		
 		;;
 
-        *"VMware"*)
+    *"VMware"*)
 
 		echo "$MAKE"
 
-                ;;
+        ;;
 
 	*)
 
-		echo "$MAKE"
+		echo "ERROR: No info for manufacturer - $MAKE"
 		EXITCODE=1
 		;;
 esac	
