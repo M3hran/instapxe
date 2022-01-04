@@ -413,6 +413,8 @@ mount -ttmpfs tmpfs /var/cache/yum > /dev/null 2>&1
 echo "diskspacecheck=0" >> /etc/yum.conf > /dev/null 2>&1
 export LANG=en_US.UTF-8
 
+clear_eventlogs
+
 cat /DISCLAIMER
 
 echo "Automated System Hardware Scan Initializing.."
@@ -455,7 +457,7 @@ case $MAKE in
 esac	
 
 error_check
-clear_eventlogs
+
 
 case $EXITCODE in
 

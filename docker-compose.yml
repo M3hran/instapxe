@@ -65,7 +65,7 @@ services:
       - instapxe_net
 
   instapxe-backend:
-    image: instapxe/instapxe-backend:0.7
+    image: instapxe/instapxe-backend:0.81
     container_name: instapxe-backend
     restart: unless-stopped
     privileged: true

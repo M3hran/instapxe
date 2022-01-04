@@ -1,7 +1,9 @@
-DEFAULT vesamenu.c32
-MENU INCLUDE pxelinux.cfg/instapxe.conf
-TIMEOUT 50 #100= 10 seconds
-ONTIMEOUT INSTAPXE
+#DEFAULT vesamenu.c32
+#MENU INCLUDE pxelinux.cfg/instapxe.conf
+DEFAULT INSTAPXE
+TIMEOUT 0 #100= 10 seconds
+PROMPT 0
+#ONTIMEOUT INSTAPXE
 
 LABEL INSTAPXE
 	MENU LABEL ^0) instaPXE Agent
