@@ -207,7 +207,7 @@ gather_sensor_data() {
 
 gather_mega_data(){
 		
-		megacli=/opt/MegaRAID/MegaCli/MegaCli64
+	megacli=/opt/MegaRAID/MegaCli/MegaCli64
         echo "Gathering MegaRAID Controller & Disk data.."
         $megacli -ShowSummary -aALL > "$HDDLOGPATH"/"$SVCTAG"_megacli_summary.txt
         $megacli -PDList -aALL > "$HDDLOGPATH"/"$SVCTAG"_physicaldisk_list.txt
@@ -225,8 +225,8 @@ gather_smart_data() {
 	declare -A address
 	CARG=""
 	echo "Gathering S.M.A.R.T. Disk data..."
-	cat /DISCLAIMER >> "$HDDLOGPATH"/"$SVCTAG"_SMART_health_status.txt
-        cat /DISCLAIMER >> $SMARTFILE 
+	cat /DISCLAIMER > "$HDDLOGPATH"/"$SVCTAG"_SMART_health_status.txt
+    cat /DISCLAIMER > $SMARTFILE 
 	#cat /DISCLAIMER >> "$HDDLOGPATH"/"$SVCTAG"_SMART_health_status.txt
 	#get raid contoller info
 	lspci | egrep -i 'raid' >> $SMARTFILE
@@ -251,7 +251,7 @@ gather_smart_data() {
 
         			*"Dell"*)
 					if [[ $k =~ megaraid* ]]; then
-						cat /DISCLAIMER >> "$HDDLOGPATH"/"$SVCTAG"_drive_"$j".txt	
+						cat /DISCLAIMER > "$HDDLOGPATH"/"$SVCTAG"_drive_"$j".txt	
 						smartctl -a -d "$k" /dev/sg0 >> "$HDDLOGPATH"/"$SVCTAG"_drive_"$j".txt
 						
 						#get health status 
@@ -262,7 +262,7 @@ gather_smart_data() {
         			*"HP"*)
 					
 					CARG="cciss"
-					cat /DISCLAIMER >> "$HDDLOGPATH"/"$SVCTAG"_drive_"$j".txt
+					cat /DISCLAIMER > "$HDDLOGPATH"/"$SVCTAG"_drive_"$j".txt
 					smartctl -a -d "$CARG","$j" "$k" >> "$HDDLOGPATH"/"$SVCTAG"_drive_"$j".txt
 
 					#get health status
@@ -272,7 +272,8 @@ gather_smart_data() {
 
         			*)
 
-                			echo "$MAKE"
+                			echo "ERROR: SMART disk scan could not detect manufacturer - $MAKE"
+					break
                 			EXITCODE=1
                 			;;
 			esac
@@ -398,11 +399,13 @@ error_check() {
         fi
 
 }
-check_make_model {
+check_make_model() {
+	echo "$MANUFACTURER"
 	
-	if [ -z "$MANUFACTURER" ]; then
-		if [ -z "$MODEL" ]; then
-			if [ -z "$SVCTAG" ]; then
+	if [ -z $(echo "$MANUFACTURER") ]; then
+		echo "manufacturer empty"
+		if [ -z $(echo "$MODEL") ]; then
+			if [ -z $(echo "$SVCTAG") ]; then
 				echo "Error: No System info for Make,Model,and Serial."
 				EXITCODE=1
 			else 
@@ -411,17 +414,21 @@ check_make_model {
 					MANUFACTURER="Dell"
 					MAKE=$(echo "$MANUFACTURER" | sed -e 's:^Dell$:Dell:' -e 's:^HP$:HP:' -e 's:^VMware$:VMware:')
 					MODEL="R620"
+					echo "Set MAKE/MODEL based on SVCTAG"
 				else
 					MANUFACTURER="HP"
 					MAKE=$(echo "$MANUFACTURER" | sed -e 's:^Dell$:Dell:' -e 's:^HP$:HP:' -e 's:^VMware$:VMware:')
 					MODEL="DL360 G8"
+					echo "Set Make/MODEL based on SERIAL"
 				fi
 			fi
 		else
 			echo "Error: No System info for Manufacturer"
 			EXITCODE=1
-		#REFACTOR: lookup model from an api for the manufacturer in this case
+			#REFACTOR: lookup model from an api for the manufacturer in this case
 		fi
+	else
+		echo "manufacturer not empty"
 	fi
 
 }
@@ -434,17 +441,18 @@ mkdir -p /var/cache/yum > /dev/null 2>&1
 mount -ttmpfs tmpfs /var/cache/yum > /dev/null 2>&1
 echo "diskspacecheck=0" >> /etc/yum.conf > /dev/null 2>&1
 export LANG=en_US.UTF-8
+#main
+cat /DISCLAIMER
 
 clear_eventlogs
 #see if make/model is not blank, if it is try to find a match
 check_make_model
 
-cat /DISCLAIMER
-
 echo "Automated System Hardware Scan Initializing.."
 echo "Scan started at: " `timestamp` && print_json "STARTED"
 
 get_cluster_location
+
 print_sysinfo
 
 #gather dmidecode data
