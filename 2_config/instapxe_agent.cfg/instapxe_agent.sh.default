@@ -207,7 +207,7 @@ gather_sensor_data() {
 
 gather_mega_data(){
 		
-		megacli=/opt/MegaRAID/MegaCli/MegaCli64
+	megacli=/opt/MegaRAID/MegaCli/MegaCli64
         echo "Gathering MegaRAID Controller & Disk data.."
         $megacli -ShowSummary -aALL > "$HDDLOGPATH"/"$SVCTAG"_megacli_summary.txt
         $megacli -PDList -aALL > "$HDDLOGPATH"/"$SVCTAG"_physicaldisk_list.txt
@@ -272,8 +272,8 @@ gather_smart_data() {
 
         			*)
 
-                			echo "SMART disk scan could not detect manufacturer - $MAKE"
-							break
+                			echo "ERROR: SMART disk scan could not detect manufacturer - $MAKE"
+					break
                 			EXITCODE=1
                 			;;
 			esac
@@ -402,10 +402,10 @@ error_check() {
 check_make_model() {
 	echo "$MANUFACTURER"
 	
-	if [ -z "$MANUFACTURER" ]; then
+	if [ -z $(echo "$MANUFACTURER") ]; then
 		echo "manufacturer empty"
-		if [ -z "$MODEL" ]; then
-			if [ -z "$SVCTAG" ]; then
+		if [ -z $(echo "$MODEL") ]; then
+			if [ -z $(echo "$SVCTAG") ]; then
 				echo "Error: No System info for Make,Model,and Serial."
 				EXITCODE=1
 			else 
