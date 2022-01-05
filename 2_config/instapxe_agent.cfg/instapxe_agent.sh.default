@@ -272,7 +272,8 @@ gather_smart_data() {
 
         			*)
 
-                			echo "SMART disk scan couldnot detect manufacturer - $MAKE"
+                			echo "SMART disk scan could not detect manufacturer - $MAKE"
+							break
                 			EXITCODE=1
                 			;;
 			esac
@@ -401,6 +402,7 @@ error_check() {
 check_make_model() {
 	
 	if [ -z "$MANUFACTURER" ]; then
+		echo "manufacturer empty"
 		if [ -z "$MODEL" ]; then
 			if [ -z "$SVCTAG" ]; then
 				echo "Error: No System info for Make,Model,and Serial."
@@ -422,8 +424,10 @@ check_make_model() {
 		else
 			echo "Error: No System info for Manufacturer"
 			EXITCODE=1
-		#REFACTOR: lookup model from an api for the manufacturer in this case
+			#REFACTOR: lookup model from an api for the manufacturer in this case
 		fi
+	else
+		echo "manufacturer not empty"
 	fi
 
 }
@@ -436,17 +440,18 @@ mkdir -p /var/cache/yum > /dev/null 2>&1
 mount -ttmpfs tmpfs /var/cache/yum > /dev/null 2>&1
 echo "diskspacecheck=0" >> /etc/yum.conf > /dev/null 2>&1
 export LANG=en_US.UTF-8
-
-clear_eventlogs
-#see if make/model is not blank, if it is try to find a match
-check_make_model
-
+#main
 cat /DISCLAIMER
 
 echo "Automated System Hardware Scan Initializing.."
 echo "Scan started at: " `timestamp` && print_json "STARTED"
 
+clear_eventlogs
+#see if make/model is not blank, if it is try to find a match
+check_make_model
+
 get_cluster_location
+
 print_sysinfo
 
 #gather dmidecode data
