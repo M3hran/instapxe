@@ -400,6 +400,7 @@ error_check() {
 
 }
 check_make_model() {
+	echo "$MANUFACTURER"
 	
 	if [ -z "$MANUFACTURER" ]; then
 		echo "manufacturer empty"
@@ -443,12 +444,12 @@ export LANG=en_US.UTF-8
 #main
 cat /DISCLAIMER
 
-echo "Automated System Hardware Scan Initializing.."
-echo "Scan started at: " `timestamp` && print_json "STARTED"
-
 clear_eventlogs
 #see if make/model is not blank, if it is try to find a match
 check_make_model
+
+echo "Automated System Hardware Scan Initializing.."
+echo "Scan started at: " `timestamp` && print_json "STARTED"
 
 get_cluster_location
 
