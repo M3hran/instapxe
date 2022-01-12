@@ -17,6 +17,9 @@ function Get-ClusterLocation {
         return $location
 }
 
+
+$API = "http://172.17.1.3:9010/api/device/"
+
 ## Install NFS-Client.
 #Install-WindowsFeature -Name NFS-Client
 
@@ -42,7 +45,17 @@ $sysinfo = Get-ComputerInfo
 ## Create a log file.
 $SVCTAG = $sysinfo.BiosSeralNumber
 $MANUFACTURER = $sysinfo.BiosManufacturer
+if ([string]::IsNullOrWhiteSpace($MANUFACTURER))
+{
+   $MANUFACTURER = "Dell Inc."
+}
+
 $MODEL = $sysinfo.CsModel
+if ([string]::IsNullOrWhiteSpace($MODEL))
+{
+   $MODEL = "PowerEdge R620"
+}
+
 $OS_NAME= $sysinfo.OsName
 $SVCTAG=$SVCTAG.Trim()
 $MAC = $(Get-WmiObject win32_networkadapterconfiguration | where {$_.IPAddress -ne $null} | select macaddress).macaddress
@@ -134,6 +147,9 @@ OS Image:           $OS_NAME
 
 Write-Output $TXT1 | Out-File -encoding utf8 -FilePath $LOGFILE -Append
 
+
+New-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Services\LanmanWorkstation\Parameters -Name AllowInsecureGuestAuth -Value 1
+
 $Inventory = New-Object System.Collections.ArrayList
 $ComputerInfo = New-Object System.Object
 
@@ -144,8 +160,8 @@ $ComputerCPU = Get-WmiObject win32_processor | select DeviceID,Name,Manufacturer
 $ComputerDisks = Get-WmiObject -Class Win32_LogicalDisk -Filter "DriveType=3" | select DeviceID,VolumeName,@{Expression={$_.Size / 1GB};Label="SizeGB"}
 
 
-$ComputerInfoManufacturer = $ComputerHW.Manufacturer
-$ComputerInfoModel = $ComputerHW.Model
+$ComputerInfoManufacturer = $MANUFACTURER
+$ComputerInfoModel = $MODEL
 $ComputerInfoNumberOfProcessors = $ComputerHW.NumberOfProcessors
 $ComputerInfoProcessorID = $ComputerCPU.DeviceID
 $ComputerInfoProcessorManufacturer = $ComputerCPU.Manufacturer
@@ -206,7 +222,7 @@ Write-Output "$(Get-TimeStamp) OS Image Deployment Completed. Shutting Down..." 
 $Param = @{
 	
 	Method 	= "POST"
-	Uri	= "http://172.17.1.3:9010/api/device/"
+	Uri	= $API
         ContentType	= "application/json"
 	Body	= $jsonpayload
 

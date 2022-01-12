@@ -10,13 +10,15 @@
 
 printf "\033c"
 start_time=$SECONDS
+API="http://172.17.1.3:9010/api/device/"
 MAC=$(cat /sys/class/net/*/address | head -n 1)
 NTPSERVER="172.17.1.3"
 NFSMOUNT="172.17.1.3:/reports"
 WORKDIR="/opt/m3hran"
-MANUFACTURER=$(dmidecode -t 1 | awk '/Manufacturer:/ {print $2,$3}')
+MANUFACTURER=$(curl "$API$MAC" | jq -r '.manufacturer')
+MODEL=$(curl "$API$MAC" | jq -r '.model')
 MAKE=$(echo "$MANUFACTURER" | sed -e 's:^Dell$:Dell:' -e 's:^HP$:HP:' -e 's:^VMware$:VMware:')
-MODEL=$(dmidecode -t 1 | awk '/Product Name:/ {print $4,$5}')
+#MODEL=$(dmidecode -t 1 | awk '/Product Name:/ {print $4,$5}')
 SVCTAG=$(dmidecode -t 1 | awk '/Serial Number:/ {print $3}')
 GENERATION="$(dmidecode -t 1 | awk '/Product Name:/ {print substr($4,3,1)}')"
 DSULOGPATHHOST=/usr/libexec/dell_dup
@@ -30,7 +32,6 @@ JSONPATH="$DSULOGPATHREMOTE/json"
 JSONFILE="$JSONPATH/"$SVCTAG"_updates.json"
 megacli=/opt/MegaRAID/MegaCli/MegaCli64
 racadm=/opt/dell/srvadmin/sbin/racadm
-API="http://172.17.1.3:9010/api/device/"
 H='-H "Content-Type: application/json" -H "Accept: application/json"'
 
 
