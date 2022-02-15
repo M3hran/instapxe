@@ -201,6 +201,8 @@ gather_dmidecode() {
 	echo -ne "Gathering HW inventory data... "
  	dmidecode -q > $INSTAPXE_LOGPATH_REMOTE/"$SVCTAG"_hardware_inv.txt && sed -i '/dmidecode.*/d' $INSTAPXE_LOGPATH_REMOTE/"$SVCTAG"_hardware_inv.txt
 
+	lshw -html > $INSTAPXE_LOGPATH_REMOTE/"$SVCTAG"_Hardware_Inventory.html
+	lspci -v > $INSTAPXE_LOGPATH_REMOTE/"$SVCTAG"_PCI_Inventory.txt
 	echo -ne "done."
         echo -ne "\n"
 }
@@ -430,7 +432,7 @@ print_reports_location () {
 print_sysinfo() {
 	
 	echo ""
-	echo -e "    Manufacturer: 		${BIGreen}${MANUFACTURER}${Color_Off}"
+	echo -e "    Manufacturer: 		$MANUFACTURER"
 	echo -e "    System Model: 		$MODEL"
 	echo -e "    SVCTAG/Serial: 		$SVCTAG"
 	echo -e "    Cluster Location: 		$LOCATION"
@@ -548,7 +550,7 @@ execute_bit() {
 		cp -R $BITDIR /tmp > /dev/null 2>&1
 		yum install -y libusb alsa-lib-devel hdparm > /dev/null 2>&1
 		chmod +x /tmp/burnintest/64bit/bit_cmd_line_x64
-		
+		cp $BITDIR/configuresystem_logo.png $INSTAPXE_LOGPATH_REMOTE/
 		#bit config
 		BITCONFIG_FILE="/tmp/burnintest/64bit/cmdline_config.txt"
 		sed -i "/LogFilename/ c\LogFilename $INSTAPXE_LOGPATH_REMOTE/" $BITCONFIG_FILE
@@ -610,7 +612,7 @@ case $MAKE in
 
 	*"Dell"*)
 		#gather megacli data
-		if [[ "$CHASSIS_TYPE" -ne "Desktop" ]]; then
+		if [[ "$CHASSIS_TYPE" != "Desktop" ]]; then
 			gather_mega_data
 			reset_idrac
 		fi

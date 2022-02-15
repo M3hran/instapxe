@@ -1,0 +1,8 @@
+DEFAULT WDS
+TIMEOUT 0
+PROMPT 0
+
+LABEL WDS
+    MENU LABEL ^4) Windows Deployment Services (WDS)
+    COM32 pxechn.c32
+    append 172.17.1.100::Boot\x64\wdsnbp.com -W
