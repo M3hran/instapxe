@@ -13,8 +13,8 @@ printf "\033c"
 
 start_time=$SECONDS
 MAC=$(cat /sys/class/net/*/address | head -n 1)
-NTPSERVER="172.17.1.3"
-NFSMOUNT="172.17.1.3:/reports"
+NTPSERVER="192.168.1.90"
+NFSMOUNT="192.168.1.90:/reports"
 WORKDIR="/opt/instapxe"
 BITDIR="$WORKDIR/burnintest"
 MANUFACTURER=$(dmidecode -t 1 | awk '/Manufacturer:/ {$1=""; print substr($0,2)}')

@@ -43,7 +43,7 @@ service_exists() {
 			fi	
         		;;
 
-        	'"Ubuntu"')
+        	'"Ubuntu"'|'"Debian GNU/Linux"')
 
                 	if dpkg -l | grep $n > /dev/null 2>&1;then
                 		return 0
@@ -84,7 +84,7 @@ case `get_os` in
 		fi
 	;;
 
-	'"Ubuntu"')
+	 '"Ubuntu"'|'"Debian GNU/Linux"' )
 		if ! service_exists gettext-base; then
                        apt-get install gettext-base
                 fi
