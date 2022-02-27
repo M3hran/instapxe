@@ -1,42 +1,52 @@
 DEFAULT vesamenu.c32
+MENU INCLUDE pxelinux.cfg/instapxe.conf
+MENU INCLUDE pxelinux.cfg/instapxe.conf
 TIMEOUT 50 #100= 10 seconds
 ONTIMEOUT INSTAPXE
 
 LABEL INSTAPXE
 	MENU LABEL ^0) instaPXE Agent
-	KERNEL http://$HTTP_HOST/instapxe_agent/instapxe.1
-        APPEND initrd=http://$HTTP_HOST/instapxe_agent/instapxe.2 root=live:http://$HTTP_HOST/instapxe_agent/squashfs.img rootfstype=auto rd.live.image rd.writable.fsimg rw DEBUG=0 share_type=nfs share_location=$NFS_HOST:/instapxe_agent share_opts=nolock loglevel=7 BUILD=0 selinux=0 edd=off rd.md=0 rd.dm=0 quiet – share_script=instapxe_agent_src/instapxe_agent.sh
+	KERNEL http://172.17.1.3/instapxe_agent/instapxe.1
+        APPEND initrd=http://172.17.1.3/instapxe_agent/instapxe.2 root=live:http://172.17.1.3/instapxe_agent/squashfs.img rootfstype=auto rd.live.image rd.writable.fsimg rw DEBUG=0 share_type=nfs share_location=172.17.1.3:/instapxe_agent share_opts=nolock loglevel=7 BUILD=0 selinux=0 edd=off rd.md=0 rd.dm=0 quiet – share_script=instapxe_agent_src/instapxe_agent.sh
 
 LABEL DSU
 	MENU LABEL ^1) Dell System Update (DSU)
-	KERNEL http://$HTTP_HOST/dsu/sa.1
-        APPEND initrd=http://$HTTP_HOST/dsu/sa.2 root=live:http://$HTTP_HOST/dsu/LiveOS/squashfs.img rootfstype=auto rd.live.image rd.writable.fsimg rw DEBUG=0 share_type=nfs share_location=$NFS_HOST:/dsu share_opts=nolock loglevel=7 BUILD=0 selinux=0 edd=off rd.md=0 rd.dm=0 quiet – share_script=drm_files/apply_bundles.sh
+	KERNEL http://172.17.1.3/dsu/sa.1
+        APPEND initrd=http://172.17.1.3/dsu/sa.2 root=live:http://172.17.1.3/dsu/LiveOS/squashfs.img rootfstype=auto rd.live.image rd.writable.fsimg rw DEBUG=0 share_type=nfs share_location=172.17.1.3:/dsu share_opts=nolock loglevel=7 BUILD=0 selinux=0 edd=off rd.md=0 rd.dm=0 quiet – share_script=drm_files/apply_bundles.sh
 
+LABEL ASSET
+	MENU LABEL ^A) Dell DOS-Based Asset Tag Utility
+  	KERNEL boot/dell_asset_utility/memdisk
+  	APPEND initrd=boot/dell_asset_utility/33W0812G.img  harddisk raw
 
+LABEL SLI
+	MENU LABEL ^S) Dell Support Live Image (SLI 3.0)
+	KERNEL boot/dell_support_live/vmlinuz0
+	APPEND rootflags=loop initrd=boot/dell_support_live/initrd0.img root=live:/SLI_3.0.0_A00.iso rootfstype=auto ro rd.live.image quiet  rhgb vga=791 rd.luks=0 rd.md=0 rd.dm=0 nomodeset
 
 
 LABEL SUMGEN8
         MENU LABEL ^2) HP Smart Update Manager (SUM)-- Gen 8
         KERNEL boot/sum_gen8/vmlinuz
-        APPEND initrd=boot/sum_gen8/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=yes AUTOREBOOTONSUCCESS=no iso1=nfs://$NFS_HOST/sum_gen8 iso1opts=nolock iso1mnt=/mnt/bootdevice
+        APPEND initrd=boot/sum_gen8/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://172.17.1.3/sum_gen8 iso1opts=nolock iso1mnt=/mnt/bootdevice
 
 
 LABEL SUMGEN7
         MENU LABEL ^3) HP Smart Update Manager (SUM)-- Gen 7
         KERNEL boot/sum_gen7/vmlinuz
-        APPEND initrd=boot/sum_gen7/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=yes AUTOREBOOTONSUCCESS=no iso1=nfs://$NFS_HOST/sum_gen7 iso1opts=nolock iso1mnt=/mnt/bootdevice
+        APPEND initrd=boot/sum_gen7/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://172.17.1.3/sum_gen7 iso1opts=nolock iso1mnt=/mnt/bootdevice
 
 
 LABEL SUMLATEST
         MENU LABEL ^4) HP Smart Update Manager (SUM)-- Latest
         KERNEL boot/sum_latest/vmlinuz
-        APPEND initrd=boot/sum_latest/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=yes AUTOREBOOTONSUCCESS=no iso1=nfs://$NFS_HOST/sum_latest iso1opts=nolock iso1mnt=/mnt/bootdevice
+        APPEND initrd=boot/sum_latest/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://172.17.1.3/sum_latest iso1opts=nolock iso1mnt=/mnt/bootdevice
 
 
 LABEL WDS
     MENU LABEL ^5) Windows Deployment Services (WDS)
     COM32 pxechn.c32
-    append $WDS_HOST::Boot\x64\wdsnbp.com -W
+    append 172.17.1.100::Boot\x64\wdsnbp.com -W
 
 MENU BEGIN
 MENU LABEL ^6) Linux Distros

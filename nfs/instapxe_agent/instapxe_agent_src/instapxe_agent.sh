@@ -40,6 +40,8 @@ H='-H "Content-Type: application/json" -H "Accept: application/json"'
 EXITCODE=0
 racadm="/opt/dell/srvadmin/sbin/racadm"
 
+yum install -y lshw > /dev/null 2>&1
+
 ##ANSI COLOR CODES
 # Reset
 Color_Off='\033[0m'       # Text Reset
