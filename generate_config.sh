@@ -112,7 +112,13 @@ esac
 #	echo "HOST_IP already set."
 #fi
 
-
+#set tftp config
+if [ -f $CONFIGDIR/instapxe-tftp.cfg/dnsmasq.default ]; then
+	envsubst < $CONFIGDIR/instapxe-tftp.cfg/dnsmasq.default > $CONFIGDIR/instapxe-tftp.cfg/dnsmasq.conf
+	echo "Generated: dnsmasq config."
+else
+	echo "Error: dnsmasq config not found"
+fi
 #set nfs exports
 if [ -f $CONFIGDIR/nfs.cfg/exports.default ]; then
 	envsubst < $CONFIGDIR/nfs.cfg/exports.default > $WORKDIR/nfs/exports
