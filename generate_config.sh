@@ -151,7 +151,8 @@ fi
 if [ -f $CONFIGDIR/dsu.cfg/dsu_helper.sh.default ]; then
 	insert="NFSMOUNT=\""$HOST_IP":/reports"\"
  	insertntp="NTPSERVER=\""$HOST_IP\"
-	sed  -e "s@^NFSMOUNT=.*@$insert@" -e "s@^NTPSERVER=.*@$insertntp@"  $CONFIGDIR/dsu.cfg/dsu_helper.sh.default  > $WORKDIR/nfs/dsu/drm_files/apply_bundles.sh
+	insertapi="API=\""$API"/device/"\"
+	sed  -e "s@^NFSMOUNT=.*@$insert@" -e "s@^NTPSERVER=.*@$insertntp@" -e "s@^API=.*@$insertapi@"  $CONFIGDIR/dsu.cfg/dsu_helper.sh.default  > $WORKDIR/nfs/dsu/drm_files/apply_bundles.sh
         echo "Generated: dsu helper script."
 else
         echo "Error: DSU helper script not found"
@@ -160,7 +161,8 @@ fi
 if [ -f $CONFIGDIR/instapxe_agent.cfg/instapxe_agent.sh.default ]; then
         insert="NFSMOUNT=\""$HOST_IP":/reports"\"
 	insertntp="NTPSERVER=\""$HOST_IP\"	
-	sed  -e "s@^NFSMOUNT=.*@$insert@" -e "s@^NTPSERVER=.*@$insertntp@" $CONFIGDIR/instapxe_agent.cfg/instapxe_agent.sh.default  > $WORKDIR/nfs/instapxe_agent/instapxe_agent_src/instapxe_agent.sh
+	insertapi="API=\""$API"/device/"\"
+	sed  -e "s@^NFSMOUNT=.*@$insert@" -e "s@^NTPSERVER=.*@$insertntp@" -e "s@^API=.*@$insertapi@" $CONFIGDIR/instapxe_agent.cfg/instapxe_agent.sh.default  > $WORKDIR/nfs/instapxe_agent/instapxe_agent_src/instapxe_agent.sh
         echo "Generated: instapxe_agent file."
 else
         echo "Error: instaPXE agent script not found"
