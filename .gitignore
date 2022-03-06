@@ -4,6 +4,7 @@ http/instapxe_agent/squashfs.img
 http/dsu/LiveOS/squashfs.img
 http/DUP_REPO/
 http/reports/
+http/proxmox/
 nfs/reports/
 nfs/sum_latest/
 nfs/sum_gen8/

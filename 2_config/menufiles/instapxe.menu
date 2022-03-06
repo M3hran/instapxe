@@ -42,6 +42,11 @@ LABEL SUMLATEST
         KERNEL boot/sum_latest/vmlinuz
         APPEND initrd=boot/sum_latest/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://$HOST_IP/sum_latest iso1opts=nolock iso1mnt=/mnt/bootdevice
 
+LABEL proxmox-install
+        MENU LABEL ^P) Install Proxmox HTTP
+        LINUX http://$HOST_IP/proxmox/linux26
+        INITRD http://$HOST_IP/proxmox/initrd
+        APPEND vga=791 video=vesafb:ywrap,mtrr ramdisk_size=16777216 rw quiet splash=silen
 
 LABEL WDS
     MENU LABEL ^5) Windows Deployment Services (WDS)
