@@ -215,5 +215,9 @@ done
 modprobe nfsd
 modprobe nfs
 echo "Added: nfs kernel modules."
-
+#disable host rpc bind 111,2049
+systemctl stop nfs-server
+systemctl disable nfs-server
+systemctl stop rpcbind
+systemctl disable rpcbind
 
