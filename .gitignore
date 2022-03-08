@@ -1,3 +1,5 @@
+2_config/instapxe.conf/print_server/label.pdf
+2_config/instapxe.conf/print_server/labeldata.csv
 web/website/__pycache__/
 tftp/
 http/instapxe_agent/squashfs.img
