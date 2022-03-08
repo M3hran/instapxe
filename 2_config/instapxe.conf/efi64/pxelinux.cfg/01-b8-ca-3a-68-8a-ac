@@ -1,8 +1,0 @@
-DEFAULT DSU
-TIMEOUT 0
-PROMPT 0
-
-LABEL DSU
-	MENU LABEL ^1) Dell System Update (DSU)
-	KERNEL http://172.17.1.3/dsu/sa.1
-        APPEND initrd=http://172.17.1.3/dsu/sa.2 root=live:http://172.17.1.3/dsu/LiveOS/squashfs.img rootfstype=auto rd.live.image rd.writable.fsimg rw DEBUG=0 share_type=nfs share_location=172.17.1.3:/dsu share_opts=nolock loglevel=7 BUILD=0 selinux=0 edd=off rd.md=0 rd.dm=0 quiet – share_script=drm_files/apply_bundles.sh
