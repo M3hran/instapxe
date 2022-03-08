@@ -4,7 +4,7 @@ web/website/__pycache__/
 tftp/
 http/instapxe_agent/squashfs.img
 http/dsu/LiveOS/squashfs.img
-http/live/*
+http/live/
 http/DUP_REPO/
 http/reports/
 http/proxmox/
