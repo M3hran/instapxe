@@ -17,3 +17,4 @@ db/*
 2_config/instapxe.conf/efi64/boot/
 production.env
 2_config/instapxe.conf/bios/pxelinux.cfg/01*
+2_config/instapxe.conf/efi64/pxelinux.cfg/01*
