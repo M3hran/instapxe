@@ -10,10 +10,10 @@
 
 printf "\033c"
 start_time=$SECONDS
-API="http://192.168.1.220:9010/api/device/"
+API="http://172.17.1.3:9010/api/device/"
 MAC=$(cat /sys/class/net/*/address | head -n 1)
-NTPSERVER="192.168.1.220"
-NFSMOUNT="192.168.1.220:/reports"
+NTPSERVER="172.17.1.3"
+NFSMOUNT="172.17.1.3:/reports"
 WORKDIR="/opt/m3hran"
 MANUFACTURER=$(curl "$API$MAC" | jq -r '.manufacturer')
 MODEL=$(curl "$API$MAC" | jq -r '.model')

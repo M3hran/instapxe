@@ -100,10 +100,14 @@ esac
 #set variable in env_file
 #if ! env | grep "HOST_IP" >/dev/null 2>&1; then
  	export WDS_IP
- 	echo "Exported:  WDS_IP envar"
+ 	echo "Generated:  WDS_IP envar"
 	export HOST_IP=`get_ip`
 	echo "Generated: HOST_IP envar."
 	export HOST_NETWORK=`get_network`
+	echo "Generated: HOST_NETWORK envar"
+	export API=http://$HOST_IP:9010/api
+	echo "Generated: API envar"
+
       
 	envsubst < $ENVFILE > $PENVFILE
 
