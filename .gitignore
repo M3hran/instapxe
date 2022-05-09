@@ -2,6 +2,8 @@
 2_config/instapxe.conf/print_server/labeldata.csv
 web/website/__pycache__/
 tftp/
+http/dban/
+http/3Fold_Zero-OS/
 http/instapxe_agent/squashfs.img
 http/dsu/LiveOS/squashfs.img
 http/live/

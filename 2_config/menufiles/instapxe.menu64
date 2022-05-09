@@ -51,7 +51,7 @@ LABEL proxmox-install
 LABEL WDS
     MENU LABEL ^5) Windows Deployment Services (WDS)
     COM32 pxechn.c32
-    append 172.17.1.100::Boot\x64\wdsnbp.com -W
+    append $WDS_IP::Boot\x64\wdsnbp.com -W
 
 MENU BEGIN
 MENU LABEL ^6) Linux Distros

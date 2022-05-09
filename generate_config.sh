@@ -10,7 +10,7 @@
 
 
 
-WDS_IP=172.17.1.100
+WDS_IP=192.168.1.4
 WORKDIR=$(pwd)
 CONFIGDIR="$WORKDIR/2_config"
 ENVFILE="$CONFIGDIR/default.env"

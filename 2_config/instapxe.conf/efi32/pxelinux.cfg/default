@@ -7,13 +7,13 @@ ONTIMEOUT INSTAPXE
 
 LABEL INSTAPXE
 	MENU LABEL ^0) instaPXE Agent
-	KERNEL http://172.17.1.3/instapxe_agent/instapxe.1
-        APPEND initrd=http://172.17.1.3/instapxe_agent/instapxe.2 root=live:http://172.17.1.3/instapxe_agent/squashfs.img rootfstype=auto rd.live.image rd.writable.fsimg rw DEBUG=0 share_type=nfs share_location=172.17.1.3:/instapxe_agent share_opts=nolock loglevel=7 BUILD=0 selinux=0 edd=off rd.md=0 rd.dm=0 quiet – share_script=instapxe_agent_src/instapxe_agent.sh
+	KERNEL http://192.168.1.3/instapxe_agent/instapxe.1
+        APPEND initrd=http://192.168.1.3/instapxe_agent/instapxe.2 root=live:http://192.168.1.3/instapxe_agent/squashfs.img rootfstype=auto rd.live.image rd.writable.fsimg rw DEBUG=0 share_type=nfs share_location=192.168.1.3:/instapxe_agent share_opts=nolock loglevel=7 BUILD=0 selinux=0 edd=off rd.md=0 rd.dm=0 quiet – share_script=instapxe_agent_src/instapxe_agent.sh
 
 LABEL DSU
 	MENU LABEL ^1) Dell System Update (DSU)
-	KERNEL http://172.17.1.3/dsu/sa.1
-        APPEND initrd=http://172.17.1.3/dsu/sa.2 root=live:http://172.17.1.3/dsu/LiveOS/squashfs.img rootfstype=auto rd.live.image rd.writable.fsimg rw DEBUG=0 share_type=nfs share_location=172.17.1.3:/dsu share_opts=nolock loglevel=7 BUILD=0 selinux=0 edd=off rd.md=0 rd.dm=0 quiet – share_script=drm_files/apply_bundles.sh
+	KERNEL http://192.168.1.3/dsu/sa.1
+        APPEND initrd=http://192.168.1.3/dsu/sa.2 root=live:http://192.168.1.3/dsu/LiveOS/squashfs.img rootfstype=auto rd.live.image rd.writable.fsimg rw DEBUG=0 share_type=nfs share_location=192.168.1.3:/dsu share_opts=nolock loglevel=7 BUILD=0 selinux=0 edd=off rd.md=0 rd.dm=0 quiet – share_script=drm_files/apply_bundles.sh
 
 LABEL ASSET
 	MENU LABEL ^A) Dell DOS-Based Asset Tag Utility
@@ -29,30 +29,30 @@ LABEL SLI
 LABEL SUMGEN8
         MENU LABEL ^2) HP Smart Update Manager (SUM)-- Gen 8
         KERNEL boot/sum_gen8/vmlinuz
-        APPEND initrd=boot/sum_gen8/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://172.17.1.3/sum_gen8 iso1opts=nolock iso1mnt=/mnt/bootdevice
+        APPEND initrd=boot/sum_gen8/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://192.168.1.3/sum_gen8 iso1opts=nolock iso1mnt=/mnt/bootdevice
 
 
 LABEL SUMGEN7
         MENU LABEL ^3) HP Smart Update Manager (SUM)-- Gen 7
         KERNEL boot/sum_gen7/vmlinuz
-        APPEND initrd=boot/sum_gen7/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://172.17.1.3/sum_gen7 iso1opts=nolock iso1mnt=/mnt/bootdevice
+        APPEND initrd=boot/sum_gen7/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://192.168.1.3/sum_gen7 iso1opts=nolock iso1mnt=/mnt/bootdevice
 
 
 LABEL SUMLATEST
         MENU LABEL ^4) HP Smart Update Manager (SUM)-- Latest
         KERNEL boot/sum_latest/vmlinuz
-        APPEND initrd=boot/sum_latest/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://172.17.1.3/sum_latest iso1opts=nolock iso1mnt=/mnt/bootdevice
+        APPEND initrd=boot/sum_latest/initrd.img media=net root=/dev/ram0 splash quiet hp_fibre showopts TYPE=AUTOMATIC AUTOPOWEROFFONSUCCESS=no AUTOREBOOTONSUCCESS=yes iso1=nfs://192.168.1.3/sum_latest iso1opts=nolock iso1mnt=/mnt/bootdevice
 
 LABEL proxmox-install
         MENU LABEL ^P) Install Proxmox HTTP
-        LINUX http://172.17.1.3/proxmox/linux26
-        INITRD http://172.17.1.3/proxmox/initrd
+        LINUX http://192.168.1.3/proxmox/linux26
+        INITRD http://192.168.1.3/proxmox/initrd
         APPEND vga=791 video=vesafb:ywrap,mtrr ramdisk_size=16777216 rw quiet splash=silen
 
 LABEL WDS
     MENU LABEL ^5) Windows Deployment Services (WDS)
     COM32 pxechn.c32
-    append 172.17.1.100::Boot\x64\wdsnbp.com -W
+    append 192.168.1.4::Boot\x64\wdsnbp.com -W
 
 MENU BEGIN
 MENU LABEL ^6) Linux Distros
