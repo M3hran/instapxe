@@ -42,8 +42,8 @@ map your uefi64 menu here if any
 - NFS_HOST=x.x.x.x                   
   you can set this variable to IP address of the NFS host and use $NFS_HOST variable in your menu to serve files via NFS
 
-### Dependencies: (external setup) 
-- DHCP (required)
+### Dependencies: (works with existing sites,setups) 
+- DHCP (optional)
 - HTTP (optional)
 - NFS (optional)
 
