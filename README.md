@@ -47,6 +47,14 @@ map your uefi64 menu here if any
 - HTTP (optional)
 - NFS (optional)
 
+### road map (areas to contribute):
+ - pipeline the builds, frontendjs
+ - ... 
+### Discord:
+https://discord.gg/xVS2seHguK
+
+
+
 
 # License: 
 This image is free for non-commercial use. View license information for the software contained in this image. https://instapxe.com/eula
