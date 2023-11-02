@@ -3,8 +3,7 @@
 -  **Where to get help:** https://instapxe.com
 - **Where to file issues:** https://instapxe.com/contact
 
-# What is instaPXE? 
-InstaPXE is a Preboot eXecution Environment needed to boot client systems from a network repository instead of classical local storage or media (SD/SSD/HDD/USB/DVD).
+# What is instaPXE? InstaPXE is a network management, automation, monitoring, operating tool suite of tools, platform based on "Preboot eXecution Environment" layer, needed to send instructions to boot clients from a network/cloud repository instead of local. (reknown as MaaS)
 
 
 ![logo](https://github.com/M3hran/instapxe/blob/main/http/instapxe_agent/site-logo-color.png)
