@@ -7,7 +7,7 @@
 InstaPXE is a Preboot eXecution Environment needed to boot client systems from a network repository instead of classical local storage or media (SD/SSD/HDD/USB/DVD).
 
 
-![logo](https://instapxe.com/wp-content/uploads/2021/09/site-logo.png)
+![logo]([https://instapxe.com/wp-content/uploads/2021/09/site-logo.png](https://instapxe.com/))
 
 
 ## How to use this image? 
