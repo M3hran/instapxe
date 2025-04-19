@@ -89,10 +89,45 @@ MENU LABEL ^6) Linux Distros
         MENU END
 MENU END
 
-LABEL VMware
-        MENU LABEL ^7) VMware ESXi
-        COM32 pxechn.c32
-        append boot/vmware/pxelinux.0
+MENU BEGIN VMs
+MENU LABEL ^V) VMs
+        LABEL Back
+        MENU LABEL Back..
+        TEXT HELP
+        Return to previous menu.
+        ENDTEXT
+        MENU EXIT
+        MENU SEPARATOR
+        #MENU INCLUDE boot/utilities/utilities.menu
+
+
+        LABEL proxmox-install
+                MENU LABEL ^P) PROXMOX Install
+                LINUX http://192.168.1.3/proxmox/linux26
+                INITRD http://192.168.1.3/proxmox/initrd
+                APPEND vga=791 video=vesafb:ywrap,mtrr ramdisk_size=16777216 rw quiet splash=silent
+
+        MENU BEGIN VMware
+        MENU TITLE VMware
+                LABEL Back
+                MENU LABEL Back..
+                TXT HELP
+                Return to previous menu.
+                ENDTXT
+                MENU SEPARATOR
+
+        LABEL ESXi 6.7
+                MENU LABEL ^1) ESXi 6.7
+                KERNEL http://192.168.1.3/esxi67/mboot.efi
+                APPEND -c http://192.168.1.3/esxi67/boot.cfg
+
+        MENU END
+
+MENU END
+
+
+
+
 
 MENU BEGIN Tools and Utilities
 MENU LABEL ^8) Tools and Utilities

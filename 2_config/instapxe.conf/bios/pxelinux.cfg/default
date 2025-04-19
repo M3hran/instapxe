@@ -22,7 +22,7 @@ MENU LABEL ^D) DELL
         MENU SEPARATOR
         #MENU INCLUDE boot/utilities/utilities.menu
 	LABEL DSU
-		MENU LABEL ^1) Dell System Update (DSU)
+		MENU LABEL ^U) Dell System Update (DSU)
 		KERNEL http://192.168.1.3/dsu/sa.1
 	        APPEND initrd=http://192.168.1.3/dsu/sa.2 root=live:http://192.168.1.3/dsu/LiveOS/squashfs.img rootfstype=auto rd.live.image rd.writable.fsimg rw DEBUG=0 share_type=nfs share_location=192.168.1.3:/dsu share_opts=nolock loglevel=7 BUILD=0 selinux=0 edd=off rd.md=0 rd.dm=0 quiet – share_script=drm_files/apply_bundles.sh
 
@@ -35,6 +35,27 @@ MENU LABEL ^D) DELL
 		MENU LABEL ^S) Dell Support Live Image (SLI 3.0)
 		KERNEL boot/dell_support_live/vmlinuz0
 		APPEND rootflags=loop initrd=boot/dell_support_live/initrd0.img root=live:/SLI_3.0.0_A00.iso rootfstype=auto ro rd.live.image quiet  rhgb vga=791 rd.luks=0 rd.md=0 rd.dm=0 nomodeset
+	
+	LABEL PERCFLASH1
+		MENU LABEL ^1) 12G PERC IT Flash (deesh 2.5) - step1 
+		KERNEL boot/12percflash-deesh/memdisk
+		APPEND initrd=boot/12percflash-deesh/good.img harddisk raw
+
+	
+        LABEL PERCFLASH2 
+                MENU LABEL ^2) 12G PERC IT Flash (deesh 2.5) - step2 
+   	        #linux   boot/12percflash-deesh/linux/vmlinuz-5.10.0-15-amd64 boot=live components iomem=relaxed intel_iommu=off amd_iommu=off findiso=boot/12percflash-deesh/linux/iso
+		#IPAPPEND 1
+        	#append initrd=boot/12percflash-deesh/linux/initrd.img-5.10.0-15-amd64 ip=dhcp rd.neednet=1 rd.live.debug=1 debug=1 netboot nfsroot=192.168.1.3:/dsu/linux/iso
+
+
+		KERNEL boot/12percflash-deesh/memdisk
+		APPEND initrd=boot/12percflash-deesh/linux/deesh-Linux-v2.3.iso iso
+		#KERNEL boot/12percflash-deesh/linux/vmlinuz
+                #APPEND rootflags=loop initrd=boot/12percflash-deesh/linux/initrd.img root=/boot/12percflash-deesh/linux/deesh-Linux-v2.3.iso rootfstype=auto ro rd.live.image rhgb vga=791 rd.luks=0 rd.md=0 rd.dm=0 nomodeset
+		#APPEND initrd=boot/12percflash-deesh/linux/initrd.img rd.neednet=1 rd.live.debug=1 ip=dhcp boot=live:http://192.168.1.3/12percflash-deesh/linux/filesystem.img rootfstype=squashfs rd.fstab=0 rd.luks=0 rd.lvm=0 rd.md=0 components iomem=relaxed intel_iommu=off amd_iommu=off
+
+
 
 MENU END
 
@@ -93,7 +114,7 @@ MENU LABEL ^L) Linux Distros
         	ENDTEXT
         	MENU EXIT
         	MENU SEPARATOR
-        	MENU INCLUDE boot/ubuntu/ubuntu.menu
+        	MENU INCLUDE pxelinux.cfg/ubuntu.menu
 	MENU END
 
         MENU BEGIN CentOS
@@ -105,7 +126,7 @@ MENU LABEL ^L) Linux Distros
                 ENDTEXT
                 MENU EXIT
                 MENU SEPARATOR
-                MENU INCLUDE boot/centos/centos.menu
+                MENU INCLUDE pxelinux.cfg/centos.menu
         MENU END
 MENU END
 
@@ -125,13 +146,14 @@ MENU LABEL ^V) VMs
         	MENU LABEL ^P) PROXMOX Install 
 	        LINUX http://192.168.1.3/proxmox/linux26
         	INITRD http://192.168.1.3/proxmox/initrd
-	        APPEND vga=791 video=vesafb:ywrap,mtrr ramdisk_size=16777216 rw quiet splash=silen
+	        APPEND vga=791 video=vesafb:ywrap,mtrr ramdisk_size=16777216 rw quiet splash=silent
 
-	LABEL VMware
-        	MENU LABEL ^7) VMware ESXi
-	        COM32 pxechn.c32
-	        append boot/vmware/pxelinux.0
-
+	
+	LABEL ESXi67
+       		MENU LABEL ^1) VMware ESXi
+        	COM32 pxechn.c32
+	        append vmware/pxelinux.0
+	
 MENU END
 
 MENU BEGIN CRYPTO
@@ -163,7 +185,14 @@ MENU LABEL ^T) Tools and Utilities
         LABEL DBAN
 		MENU LABEL ^1) DBAN AUTONUKE
 		KERNEL http://192.168.1.3/dban/DBAN.BZI
-		APPEND nuke="dwipe --autonuke" silent
+		APPEND nuke="dwipe --autonuke --method zero" silent
+	
+	LABEL hdt
+        	MENU LABEL ^2)Hardware Detection Tool (HDT)
+        	com32 hdt.c32
+
+
+
 MENU END
 
 

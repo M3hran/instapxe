@@ -11,8 +11,11 @@ services:
     cap_add:
       - NET_ADMIN
     volumes:
+      - ./boot:/var/opt/instapxe/bios/boot
       - ./2_config/instapxe-tftp.cfg/dnsmasq.conf:/pxe/dnsmasq/dnsmasq.conf
       - ./2_config/instapxe.conf:/var/opt/instapxe
+      - ./http/vmware:/var/opt/instapxe/bios/vmware
+      - ./http/vmware:/var/opt/instapxe/vmware  
     network_mode: "host"
 
   instapxe-http:
@@ -52,6 +55,7 @@ services:
       - ./nfs/instapxe_agent:/instapxe_agent
     networks:
       - instapxe_net
+    command: sh -c "modprobe nfs"
 
   instapxe-db:
     image: mysql

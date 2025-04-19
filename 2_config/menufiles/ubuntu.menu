@@ -1,0 +1,8 @@
+label install
+  menu label ^Install Ubuntu 24.04.01 LTS
+  kernel boot/ubuntu/linux
+  append initrd=boot/ubuntu/initrd root=/dev/ram0 ramdisk_size=1500000 ip=dhcp iso-url=https://releases.ubuntu.com/24.04.1/ubuntu-24.04.1-live-server-amd64.iso ---
+label min
+  menu label Ubuntu 24 LTS - minimal
+  kernel http://$HOST_IP/ubuntu/linux
+  append initrd=http://$HOST_IP/ubuntu/ubuntuminimal.img 

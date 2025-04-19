@@ -16,9 +16,9 @@ NTPSERVER="172.17.1.3"
 NFSMOUNT="172.17.1.3:/reports"
 WORKDIR="/opt/m3hran"
 MANUFACTURER=$(curl "$API$MAC" | jq -r '.manufacturer')
-MODEL=$(curl "$API$MAC" | jq -r '.model')
+#MODEL=$(curl "$API$MAC" | jq -r '.model')
 MAKE=$(echo "$MANUFACTURER" | sed -e 's:^Dell$:Dell:' -e 's:^HP$:HP:' -e 's:^VMware$:VMware:')
-#MODEL=$(dmidecode -t 1 | awk '/Product Name:/ {print $4,$5}')
+MODEL=$(dmidecode -t 1 | awk '/Product Name:/ {print $4,$5}')
 SVCTAG=$(dmidecode -t 1 | awk '/Serial Number:/ {print $3}')
 GENERATION="$(dmidecode -t 1 | awk '/Product Name:/ {print substr($4,3,1)}')"
 DSULOGPATHHOST=/usr/libexec/dell_dup
@@ -33,8 +33,8 @@ JSONFILE="$JSONPATH/"$SVCTAG"_updates.json"
 megacli=/opt/MegaRAID/MegaCli/MegaCli64
 racadm=/opt/dell/srvadmin/sbin/racadm
 H='-H "Content-Type: application/json" -H "Accept: application/json"'
-
-
+R_LOC=0
+AUTOMATION=0
 #ntpdate -u $NTPSERVER
 mkdir -p $DSULOGPATHHOST
 mkdir -p $WORKDIR > /dev/null 2>&1
@@ -74,17 +74,17 @@ print_json () {
 	       
         fi
 
+	if [[ $AUTOMATION -eq 1 ]]; then
 
-
-        #print event to api
-        curl -sk "$H" -X POST --data "$JSON_PAYLOAD" $API > /dev/null
-        if [ $? != 0 ];then
-                echo "Error: $? - instapxe API unavailable"
-                exit 1
-        else
-                echo "API request successful."
-        fi
-
+        	#print event to api
+        	curl -sk "$H" -X POST --data "$JSON_PAYLOAD" $API > /dev/null
+        	if [ $? != 0 ];then
+                	echo "Error: $? - instapxe API unavailable"
+                	exit 1
+        	else
+                	echo "API request successful."
+        	fi
+	fi
 
 
 
@@ -170,6 +170,7 @@ dsu_update() {
 
 
         if [[ $gen -eq 1 ]]; then
+		echo "Running DSU for 11th Gen systems" 
 
 		dsu \
 	                --non-interactive \
@@ -177,6 +178,7 @@ dsu_update() {
                         --config=/opt/dell/toolkit/systems/drm_files/dsuconfig_11.xml
 	fi
         if [[ $gen -eq 2 ]]; then
+		echo "Running DSU for 12th Gen or above systems"
 
                 dsu \
                         --non-interactive \
@@ -323,11 +325,13 @@ shutdowng() {
 }
 get_cluster_location() {
 
-        interface=$( ifconfig | head -n1 | cut -d ":" -f 1)
-        value=$( tcpdump -q -nn -v -i $interface -s 500 -c 1 'ether[20:2]==0x2000' 2> /dev/null |  grep -i "Device-ID\|Port-ID" | cut -d "'" -f 2,4 )
-        RACK=$( echo $value | cut -c 2)
-        RU=$( echo $value | awk -F '/' '{print $2}' )
-        LOCATION="Rack$RACK-U$RU"
+	if [[ $R_LOC -eq 1 ]]; then
+        	interface=$( ifconfig | head -n1 | cut -d ":" -f 1)
+        	value=$( tcpdump -q -nn -v -i $interface -s 500 -c 1 'ether[20:2]==0x2000' 2> /dev/null |  grep -i "Device-ID\|Port-ID" | cut -d "'" -f 2,4 )
+        	RACK=$( echo $value | cut -c 2)
+        	RU=$( echo $value | awk -F '/' '{print $2}' )
+        	LOCATION="Rack$RACK-U$RU"
+	fi
 }
 
 
@@ -337,7 +341,9 @@ print_sysinfo() {
         echo "    Manufacturer:                 $MANUFACTURER"
         echo "    System Model:                 $MODEL"
         echo "    SVCTAG/Serial:                $SVCTAG"
-        echo "    Cluster Location:             $LOCATION"
+	if [[ $R_LOC -eq 1 ]]; then
+        	echo "    Cluster Location:             $LOCATION"
+	fi
         echo ""
 
 
@@ -410,12 +416,13 @@ case $GENERATION in
 		;;
 
 #	*)
-#
-#		echo "ERROR: unsupported system!"
+#		echo "ERROR: System MODEL not found!"
 #		echo $MODEL
 #		echo ""
 #		echo "terminating.."
 #		exit 1
+
+
 #		;;
 esac	
 

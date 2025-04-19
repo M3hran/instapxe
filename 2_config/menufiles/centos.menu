@@ -1,0 +1,13 @@
+label linux
+  menu label ^Install CentOS Stream 9
+  menu default
+  kernel boot/centos9/vmlinuz
+  append initrd=boot/centos9/initrd.img ip=dhcp inst.repo=http://$HOST_IP/centos9
+label vesa
+  menu label Install CentOS 9 with ^basic video driver
+  kernel boot/centos9/vmlinuz
+  append initrd=boot/centos9/initrd.img ip=dhcp inst.xdriver=vesa nomodeset inst.repo=http://$HOST_IP/centos9
+label rescue
+  menu label ^Rescue installed system
+  kernel boot/centos9/vmlinuz
+  append initrd=boot/centos9/initrd.img rescue

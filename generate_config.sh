@@ -184,12 +184,27 @@ do
 			cp -R ./tftp/* $i/boot 
 			echo "Boot ROMs loaded."
 	fi
+	#generate default menu
 	if [[ $i == $INSTALLDIR/bios ]]; then
 		
 			#ln -s $i/pxelinux.cfg /instapxe.conf/bios
 		envsubst < ./2_config/menufiles/instapxe.menu > $i/pxelinux.cfg/default
 		echo "BIOS menus created."
 	fi
+	#generate submenus
+
+        if [[ $i == $INSTALLDIR/bios ]]; then
+
+                        #ln -s $i/pxelinux.cfg /instapxe.conf/bios
+                envsubst < ./2_config/menufiles/ubuntu.menu > $i/pxelinux.cfg/ubuntu.menu
+                echo "UBUNTU submenus created."
+        fi
+        if [[ $i == $INSTALLDIR/bios ]]; then
+
+                        #ln -s $i/pxelinux.cfg /instapxe.conf/bios
+                envsubst < ./2_config/menufiles/centos.menu > $i/pxelinux.cfg/centos.menu
+                echo "CENTOS submenus created."
+        fi
 	if [[ $i == $INSTALLDIR/efi32 ]]; then
 			
 			#ln -s $i/pxelinux.cfg /instapxe.conf/uefi32
@@ -215,10 +230,12 @@ do
 done
 
 
-#set nfs module
-modprobe nfsd
-modprobe nfs
-echo "Added: nfs kernel modules."
+#set nfsd module
+#modprobe nfsd
+#echo nfsd > /etc/modules-load.d/nfsd.conf
+#echo nfs > /etc/modules-load.d/nfs.conf
+#echo "Added: nfs kernel modules."
+
 #disable host rpc bind 111,2049
 systemctl stop nfs-server
 systemctl disable nfs-server
