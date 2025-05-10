@@ -231,14 +231,17 @@ done
 
 
 #set nfsd module
-#modprobe nfsd
-#echo nfsd > /etc/modules-load.d/nfsd.conf
-#echo nfs > /etc/modules-load.d/nfs.conf
-#echo "Added: nfs kernel modules."
+modprobe nfsd
+echo nfsd > /etc/modules-load.d/nfsd.conf
+echo nfs > /etc/modules-load.d/nfs.conf
+echo "Added: nfs kernel modules."
 
 #disable host rpc bind 111,2049
 systemctl stop nfs-server
 systemctl disable nfs-server
-systemctl stop rpcbind
-systemctl disable rpcbind
-
+systemctl disable rpcbind.target
+systemctl disable rpcbind.socket
+systemctl disable rpcbind.service
+systemctl stop rpcbind.target
+systemctl stop rpcbind.socket
+systemctl stop rpcbind.service

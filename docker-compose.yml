@@ -58,7 +58,7 @@ services:
     command: sh -c "modprobe nfs"
 
   instapxe-db:
-    image: mysql
+    image: mysql:8
     container_name: instapxe-db
     restart: unless-stopped
     env_file:

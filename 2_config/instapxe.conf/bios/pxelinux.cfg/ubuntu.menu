@@ -4,5 +4,5 @@ label install
   append initrd=boot/ubuntu/initrd root=/dev/ram0 ramdisk_size=1500000 ip=dhcp iso-url=https://releases.ubuntu.com/24.04.1/ubuntu-24.04.1-live-server-amd64.iso ---
 label min
   menu label Ubuntu 24 LTS - minimal
-  kernel http://192.168.1.3/ubuntu/linux
-  append initrd=http://192.168.1.3/ubuntu/ubuntuminimal.img 
+  kernel http://192.168.1.155/ubuntu/linux
+  append initrd=http://192.168.1.155/ubuntu/ubuntuminimal.img 

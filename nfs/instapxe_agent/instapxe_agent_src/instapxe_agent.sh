@@ -13,8 +13,8 @@ printf "\033c"
 
 start_time=$SECONDS
 MAC=$(cat /sys/class/net/*/address | head -n 1)
-NTPSERVER="192.168.1.3"
-NFSMOUNT="192.168.1.3:/reports"
+NTPSERVER="192.168.1.155"
+NFSMOUNT="192.168.1.155:/reports"
 WORKDIR="/opt/instapxe"
 BITDIR="$WORKDIR/burnintest"
 MANUFACTURER=$(dmidecode -t 1 | awk '/Manufacturer:/ {$1=""; print substr($0,2)}')
@@ -35,7 +35,7 @@ SMARTFILE="$HDDLOGPATH/"$SVCTAG"_smartlog.txt"
 JSONPATH="$INSTAPXE_LOGPATH_REMOTE/json"
 JSONFILE="$JSONPATH/"$SVCTAG"_updates.json"
 LOCATION=""
-API="http://192.168.1.3:9010/api/device/"
+API="http://192.168.1.155:9010/api/device/"
 H='-H "Content-Type: application/json" -H "Accept: application/json"'
 EXITCODE=0
 racadm="/opt/dell/srvadmin/sbin/racadm"
